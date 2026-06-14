@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useEffect } from "react";
-import { Menu, X, Music, Disc, Globe } from "lucide-react";
+import { Menu, X, Music, Disc, Globe, Sparkles } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import Logo from "./Logo";
 
@@ -29,6 +29,7 @@ export default function Navbar() {
     { name: "About", href: "#about", hash: "about", icon: Disc, external: false },
     { name: "Distribution & Pricing", href: "#pricing", hash: "pricing", icon: Music, external: false },
     { name: "Smart Links", href: "https://home.wavora.live", hash: "", icon: Globe, external: true },
+    { name: "Mastering", href: "https://master.wavora.live", hash: "", icon: Sparkles, external: true },
   ];
 
   const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>, link: typeof navLinks[0]) => {
@@ -77,6 +78,7 @@ export default function Navbar() {
                 rel={link.external ? "noopener noreferrer" : undefined}
                 className="text-gray-400 hover:text-white text-sm font-medium transition-colors relative py-1 group flex items-center gap-1.5"
               >
+                <link.icon className="h-4 w-4 text-purple-400/70 group-hover:text-purple-400 transition-colors shrink-0" />
                 {link.name}
                 <span className="absolute bottom-0 left-0 w-0 h-[2px] bg-purple-500 transition-all duration-300 group-hover:w-full" />
               </a>
