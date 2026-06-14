@@ -73,16 +73,16 @@ const MOCK_SEED_APPLICATIONS = [
 const mapDbApplicationToClient = (row: any) => ({
   id: row.id,
   plan: row.plan,
-  isAnnual: row.is_annual,
+  isAnnual: row.is_annual !== undefined ? row.is_annual : (row.isAnnual !== undefined ? row.isAnnual : true),
   email: row.email,
-  fullName: row.full_name,
-  stageName: row.stage_name || "",
-  contactNumber: row.contact_number || "",
+  fullName: row.full_name || row.fullName || "",
+  stageName: row.stage_name || row.stageName || "",
+  contactNumber: row.contact_number || row.contactNumber || "",
   referral: row.referral || "",
   receipt: row.receipt || "",
   status: row.status || "pending",
-  userId: row.user_id,
-  date: row.created_at || new Date().toISOString()
+  userId: row.user_id || row.userId,
+  date: row.created_at || row.date || new Date().toISOString()
 });
 
 interface AdminPanelProps {
@@ -143,7 +143,11 @@ export default function AdminPanel({ onBackToMain }: AdminPanelProps) {
     } else {
       try {
         const parsed = JSON.parse(stored);
-        setApplications(parsed);
+        if (Array.isArray(parsed)) {
+          setApplications(parsed.map(mapDbApplicationToClient));
+        } else {
+          setApplications([]);
+        }
       } catch (err) {
         setApplications([]);
       }

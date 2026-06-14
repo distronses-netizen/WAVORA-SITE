@@ -179,37 +179,69 @@ export default function DistributionPricing() {
             Publish your audio tracks across Spotify, Apple Music, TikTok, Deezer, and YouTube Music. Zero hidden upload fees. Choose the tier that matches your career momentum.
           </p>
 
-          {/* Billing Mode Switcher with "3 dots" visual indicators */}
-          <div className="pt-6 flex justify-center" id="pricing-switcher">
-            <div className="flex p-1.5 bg-neutral-900 border border-white/10 rounded-2xl gap-2 max-w-lg overflow-x-auto sm:overflow-visible">
+          {/* Billing Mode Switcher with robust responsive layout */}
+          <div className="pt-6 flex justify-center w-full" id="pricing-switcher">
+            <div className="grid grid-cols-3 p-1.5 bg-neutral-900/90 border border-white/10 rounded-2xl gap-2 w-full max-w-2xl mx-auto">
               <button
                 onClick={() => setPricingMode("annual")}
-                className={`py-2 px-4 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center gap-2 transition-all cursor-pointer whitespace-nowrap ${
-                  pricingMode === "annual" ? "bg-white text-black shadow-md font-extrabold" : "text-gray-400 hover:text-white"
+                className={`py-3 px-1 sm:px-4 rounded-xl text-[10px] sm:text-xs font-bold uppercase tracking-wider flex flex-col md:flex-row items-center justify-center gap-1.5 transition-all cursor-pointer select-none text-center relative ${
+                  pricingMode === "annual"
+                    ? "bg-white text-black shadow-lg font-black"
+                    : "text-gray-400 hover:text-white hover:bg-white/5"
                 }`}
               >
-                <span className={`h-2 w-2 rounded-full transition-all ${pricingMode === "annual" ? "bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.9)]" : "bg-emerald-500/40"}`} />
-                Subscription (Annual)
+                <span className="flex items-center gap-1 sm:gap-1.5 justify-center">
+                  <span className={`h-1.5 w-1.5 sm:h-2 sm:w-2 rounded-full transition-all shrink-0 ${pricingMode === "annual" ? "bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.9)]" : "bg-emerald-500/40"}`} />
+                  <span className="hidden sm:inline">Subscription (Annual)</span>
+                  <span className="sm:hidden">Annual</span>
+                </span>
+                <span className={`text-[8px] px-1 py-0.5 rounded leading-none font-bold uppercase shrink-0 transition-all ${
+                  pricingMode === "annual"
+                    ? "bg-emerald-500/15 text-emerald-600 border border-emerald-500/20"
+                    : "bg-emerald-500/10 text-emerald-400 border border-emerald-500/10"
+                }`}>
+                  Save 20%
+                </span>
               </button>
 
               <button
                 onClick={() => setPricingMode("monthly")}
-                className={`py-2 px-4 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center gap-2 transition-all cursor-pointer whitespace-nowrap ${
-                  pricingMode === "monthly" ? "bg-white text-black shadow-md font-extrabold" : "text-gray-400 hover:text-white"
+                className={`py-3 px-1 sm:px-4 rounded-xl text-[10px] sm:text-xs font-bold uppercase tracking-wider flex flex-col md:flex-row items-center justify-center gap-1.5 transition-all cursor-pointer select-none text-center ${
+                  pricingMode === "monthly"
+                    ? "bg-white text-black shadow-lg font-black"
+                    : "text-gray-400 hover:text-white hover:bg-white/5"
                 }`}
               >
-                <span className={`h-2 w-2 rounded-full transition-all ${pricingMode === "monthly" ? "bg-purple-500 animate-pulse shadow-[0_0_8px_rgba(139,92,246,0.9)]" : "bg-purple-500/40"}`} />
-                Subscription (Monthly)
+                <span className="flex items-center gap-1 sm:gap-1.5 justify-center">
+                  <span className={`h-1.5 w-1.5 sm:h-2 sm:w-2 rounded-full transition-all shrink-0 ${pricingMode === "monthly" ? "bg-purple-500 animate-pulse shadow-[0_0_8px_rgba(139,92,246,0.9)]" : "bg-purple-500/40"}`} />
+                  <span className="hidden sm:inline">Subscription (Monthly)</span>
+                  <span className="sm:hidden">Monthly</span>
+                </span>
+                <span className="text-[8px] text-neutral-500/80 uppercase leading-none mt-0.5 md:mt-0 font-bold tracking-wide">
+                  Standard
+                </span>
               </button>
 
               <button
                 onClick={() => setPricingMode("single")}
-                className={`py-2 px-4 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center gap-2 transition-all cursor-pointer whitespace-nowrap ${
-                  pricingMode === "single" ? "bg-white text-black shadow-md font-extrabold" : "text-gray-400 hover:text-white"
+                className={`py-3 px-1 sm:px-4 rounded-xl text-[10px] sm:text-xs font-bold uppercase tracking-wider flex flex-col md:flex-row items-center justify-center gap-1.5 transition-all cursor-pointer select-none text-center ${
+                  pricingMode === "single"
+                    ? "bg-white text-black shadow-lg font-black"
+                    : "text-gray-400 hover:text-white hover:bg-white/5"
                 }`}
               >
-                <span className={`h-2 w-2 rounded-full transition-all ${pricingMode === "single" ? "bg-cyan-400 animate-pulse shadow-[0_0_8px_rgba(34,211,238,0.9)]" : "bg-cyan-500/40"}`} />
-                Single Track Release
+                <span className="flex items-center gap-1 sm:gap-1.5 justify-center">
+                  <span className={`h-1.5 w-1.5 sm:h-2 sm:w-2 rounded-full transition-all shrink-0 ${pricingMode === "single" ? "bg-cyan-400 animate-pulse shadow-[0_0_8px_rgba(34,211,238,0.9)]" : "bg-cyan-500/40"}`} />
+                  <span className="hidden sm:inline">Single Track Release</span>
+                  <span className="sm:hidden">Single Track</span>
+                </span>
+                <span className={`text-[8px] px-1 py-0.5 rounded leading-none font-bold uppercase shrink-0 ${
+                  pricingMode === "single"
+                    ? "bg-cyan-500/15 text-cyan-600 border border-cyan-500/20"
+                    : "bg-cyan-500/10 text-cyan-400 border border-cyan-500/10"
+                }`}>
+                  One-time
+                </span>
               </button>
             </div>
           </div>
