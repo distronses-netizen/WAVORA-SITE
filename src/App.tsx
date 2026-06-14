@@ -10,12 +10,13 @@ import About from "./components/About";
 import DistributionPricing from "./components/DistributionPricing";
 import Footer from "./components/Footer";
 import ApplicationModal from "./components/ApplicationModal";
-import FreeDistributionModal from "./components/FreeDistributionModal";
 import AdminPanel from "./components/AdminPanel";
 import SmartLinkCreator from "./components/SmartLinkCreator";
 import SmartLinkViewer from "./components/SmartLinkViewer";
 import SingleTrackDistributor from "./components/SingleTrackDistributor";
 import { syncOffersFromSupabase } from "./lib/pricing";
+
+import FreeDistributionPage from "./components/FreeDistributionPage";
 
 // Helper to extract and clean smart link ID from pathname or hash
 const getCleanedSmartLinkId = (pathStr: string, hashStr: string): string => {
@@ -37,13 +38,12 @@ const getCleanedSmartLinkId = (pathStr: string, hashStr: string): string => {
 
 export default function App() {
   const [modalOpen, setModalOpen] = useState(false);
-  const [freeModalOpen, setFreeModalOpen] = useState(false);
   const [selectedPlanId, setSelectedPlanId] = useState("pro");
   const [isAnnualPlan, setIsAnnualPlan] = useState(true);
   const [selectedSingleTrackPlan, setSelectedSingleTrackPlan] = useState<"basic" | "pro" | "elite">("pro");
 
   // Client-side Router State (Instant synchronous resolution on initial mount)
-  const [currentRoute, setCurrentRoute] = useState<"home" | "admin" | "view-smart-link" | "single-track-distribute">(() => {
+  const [currentRoute, setCurrentRoute] = useState<"home" | "admin" | "view-smart-link" | "single-track-distribute" | "free-distribution">(() => {
     const path = window.location.pathname;
     const hash = window.location.hash;
     
@@ -52,6 +52,9 @@ export default function App() {
     }
     if (path === "/distribute-single" || hash === "#distribute-single") {
       return "single-track-distribute";
+    }
+    if (path === "/free" || path === "/free-distribution" || hash === "#free" || hash === "#free-distribution") {
+      return "free-distribution";
     }
     if (path.startsWith("/s/") || hash.startsWith("#/s/") || hash.startsWith("#s/")) {
       return "view-smart-link";
@@ -75,6 +78,8 @@ export default function App() {
       const hash = window.location.hash;
       if (path === "/admin" || path.startsWith("/admin") || hash === "#admin" || hash === "#/admin") {
         setCurrentRoute("admin");
+      } else if (path === "/free" || path === "/free-distribution" || hash === "#free" || hash === "#free-distribution") {
+        setCurrentRoute("free-distribution");
       } else if (path.startsWith("/s/") || hash.startsWith("#/s/") || hash.startsWith("#s/")) {
         const id = getCleanedSmartLinkId(path, hash);
         setActiveSmartLinkId(id);
@@ -128,7 +133,9 @@ export default function App() {
     };
 
     const handleOpenFreeModal = () => {
-      setFreeModalOpen(true);
+      setCurrentRoute("free-distribution");
+      window.history.pushState({}, "", "/free");
+      window.scrollTo({ top: 0, behavior: "smooth" });
     };
 
     const handleOpenSingleTrack = (e: Event) => {
@@ -167,13 +174,15 @@ export default function App() {
     };
   }, []);
 
-  const navigateTo = (route: "home" | "admin" | "view-smart-link" | "single-track-distribute", smartLinkId?: string) => {
+  const navigateTo = (route: "home" | "admin" | "view-smart-link" | "single-track-distribute" | "free-distribution", smartLinkId?: string) => {
     setCurrentRoute(route);
     let newPath = "/";
     if (route === "admin") {
       newPath = "/admin";
     } else if (route === "single-track-distribute") {
       newPath = "/distribute-single";
+    } else if (route === "free-distribution") {
+      newPath = "/free";
     } else if (route === "view-smart-link" && smartLinkId) {
       newPath = `/s/${smartLinkId}`;
       setActiveSmartLinkId(smartLinkId);
@@ -188,6 +197,10 @@ export default function App() {
 
   if (currentRoute === "view-smart-link" && activeSmartLinkId) {
     return <SmartLinkViewer id={activeSmartLinkId} onBackToMain={() => navigateTo("home")} />;
+  }
+
+  if (currentRoute === "free-distribution") {
+    return <FreeDistributionPage onBackToMain={() => navigateTo("home")} />;
   }
 
   if (currentRoute === "single-track-distribute") {
@@ -258,12 +271,6 @@ export default function App() {
         onClose={() => setModalOpen(false)} 
         initialPlanId={selectedPlanId} 
         initialIsAnnual={isAnnualPlan}
-      />
-
-      {/* Free Distribution Application Modal */}
-      <FreeDistributionModal
-        isOpen={freeModalOpen}
-        onClose={() => setFreeModalOpen(false)}
       />
     </div>
   );

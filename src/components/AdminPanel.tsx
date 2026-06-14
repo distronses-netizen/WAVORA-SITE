@@ -340,28 +340,26 @@ export default function AdminPanel({ onBackToMain }: AdminPanelProps) {
 
   // Delete Application
   const deleteApp = async (appId: string) => {
-    if (confirm("Are you sure you want to permanently delete this application record?")) {
-      const updated = applications.filter(app => app.id !== appId);
-      setApplications(updated);
-      localStorage.setItem("wavora_applications", JSON.stringify(updated));
-      if (selectedApp && selectedApp.id === appId) {
-        setSelectedApp(updated[0] || null);
-      }
+    const updated = applications.filter(app => app.id !== appId);
+    setApplications(updated);
+    localStorage.setItem("wavora_applications", JSON.stringify(updated));
+    if (selectedApp && selectedApp.id === appId) {
+      setSelectedApp(updated[0] || null);
+    }
 
-      const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(appId);
-      if (!isUUID) return;
+    const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(appId);
+    if (!isUUID) return;
 
-      try {
-        const { error } = await supabase
-          .from("applications")
-          .delete()
-          .eq("id", appId);
-        if (error) {
-          console.warn("Could not remove record from Supabase:", error);
-        }
-      } catch (err) {
-        console.warn("Exception during remote deletion:", err);
+    try {
+      const { error } = await supabase
+        .from("applications")
+        .delete()
+        .eq("id", appId);
+      if (error) {
+        console.warn("Could not remove record from Supabase:", error);
       }
+    } catch (err) {
+      console.warn("Exception during remote deletion:", err);
     }
   };
 
@@ -394,28 +392,26 @@ export default function AdminPanel({ onBackToMain }: AdminPanelProps) {
 
   // Delete Free Application
   const deleteFreeApp = async (appId: string) => {
-    if (confirm("Are you sure you want to permanently delete this free application record?")) {
-      const updated = freeApplications.filter(app => app.id !== appId);
-      setFreeApplications(updated);
-      localStorage.setItem("wavora_free_applications", JSON.stringify(updated));
-      if (selectedFreeApp && selectedFreeApp.id === appId) {
-        setSelectedFreeApp(updated[0] || null);
-      }
+    const updated = freeApplications.filter(app => app.id !== appId);
+    setFreeApplications(updated);
+    localStorage.setItem("wavora_free_applications", JSON.stringify(updated));
+    if (selectedFreeApp && selectedFreeApp.id === appId) {
+      setSelectedFreeApp(updated[0] || null);
+    }
 
-      const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(appId);
-      if (!isUUID) return;
+    const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(appId);
+    if (!isUUID) return;
 
-      try {
-        const { error } = await supabase
-          .from("free_applications")
-          .delete()
-          .eq("id", appId);
-        if (error) {
-          console.warn("Could not remove record from Supabase:", error);
-        }
-      } catch (err) {
-        console.warn("Exception during remote deletion:", err);
+    try {
+      const { error } = await supabase
+        .from("free_applications")
+        .delete()
+        .eq("id", appId);
+      if (error) {
+        console.warn("Could not remove record from Supabase:", error);
       }
+    } catch (err) {
+      console.warn("Exception during remote deletion:", err);
     }
   };
 
