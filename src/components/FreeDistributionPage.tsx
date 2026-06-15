@@ -82,12 +82,18 @@ export default function FreeDistributionPage({ onBackToMain }: FreeDistributionP
           .select();
 
         if (error) {
-          console.warn("Supabase insert error for free_applications:", error);
+          console.error("Supabase insert error for free_applications:", error);
+          setErrors({ submit: `Failed to save to database: ${error.message}. Please check your connection or database configuration.` });
+          setIsSubmitting(false);
+          return;
         } else if (data && data[0]) {
           remoteAppId = data[0].id;
         }
-      } catch (dbErr) {
-        console.warn("Could not write free application to Supabase:", dbErr);
+      } catch (dbErr: any) {
+        console.error("Could not write free application to Supabase:", dbErr);
+        setErrors({ submit: `Database connection error: ${dbErr.message || "Unknown error"}. Please make sure your Supabase environment variables are configured in Vercel.` });
+        setIsSubmitting(false);
+        return;
       }
 
       const clientPayload = {
@@ -328,6 +334,13 @@ export default function FreeDistributionPage({ onBackToMain }: FreeDistributionP
                         className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-purple-500 focus:bg-white/10 transition-all resize-none"
                       />
                     </div>
+
+                    {errors.submit && (
+                      <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-xl flex items-start gap-2 text-red-400 text-xs">
+                        <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
+                        <p>{errors.submit}</p>
+                      </div>
+                    )}
 
                     <button
                       type="submit"
