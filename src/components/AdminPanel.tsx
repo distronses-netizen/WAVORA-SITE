@@ -201,7 +201,7 @@ export default function AdminPanel({ onBackToMain }: AdminPanelProps) {
         throw error;
       }
 
-      if (data && data.length > 0) {
+      if (data) {
         const mapped = data.map((row: any) => ({
           id: row.id,
           artistName: row.artist_name || row.artistName || "",
@@ -215,8 +215,24 @@ export default function AdminPanel({ onBackToMain }: AdminPanelProps) {
           status: row.status || "pending",
           date: row.created_at || row.date || new Date().toISOString()
         }));
-        setFreeApplications(mapped);
-        localStorage.setItem("wavora_free_applications", JSON.stringify(mapped));
+
+        // Merge with local-only items that failed Supabase insertion (missing columns etc)
+        let localOnlyApps: any[] = [];
+        try {
+          const stored = localStorage.getItem("wavora_free_applications");
+          if (stored) {
+            const parsed = JSON.parse(stored);
+            if (Array.isArray(parsed)) {
+              localOnlyApps = parsed.filter(item => typeof item.id === "string" && item.id.startsWith("free-"));
+            }
+          }
+        } catch(e) {}
+        
+        // Ensure to remove duplicates if somehow local item got same ID
+        const finalMerged = [...localOnlyApps, ...mapped];
+
+        setFreeApplications(finalMerged);
+        localStorage.setItem("wavora_free_applications", JSON.stringify(finalMerged));
         return;
       }
     } catch (err) {

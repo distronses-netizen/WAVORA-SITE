@@ -18,21 +18,30 @@ CREATE TABLE IF NOT EXISTS free_applications (
 -- Enable RLS (Row Level Security)
 ALTER TABLE free_applications ENABLE ROW LEVEL SECURITY;
 
+-- Drop existing policies if they exist to avoid errors
+DROP POLICY IF EXISTS "Allow public inserts" ON free_applications;
+DROP POLICY IF EXISTS "Allow public read" ON free_applications;
+DROP POLICY IF EXISTS "Allow public update" ON free_applications;
+DROP POLICY IF EXISTS "Allow public delete" ON free_applications;
+DROP POLICY IF EXISTS "Allow authenticated read" ON free_applications;
+DROP POLICY IF EXISTS "Allow authenticated update" ON free_applications;
+DROP POLICY IF EXISTS "Allow authenticated delete" ON free_applications;
+
 -- Allow unauthenticated (public) inserts so that users can submit the form
 CREATE POLICY "Allow public inserts" ON free_applications
     FOR INSERT
     WITH CHECK (true);
 
--- Allow admins to read, update, and delete (assuming you handle admin auth, if you use a service_role key from your admin panel, the service role bypasses RLS anyway).
--- This sets up basic policy for authenticated users:
-CREATE POLICY "Allow authenticated read" ON free_applications
+-- Allow public read, update, and delete for the unauthenticated admin portal
+CREATE POLICY "Allow public read" ON free_applications
     FOR SELECT
-    USING (auth.role() = 'authenticated');
+    USING (true);
 
-CREATE POLICY "Allow authenticated update" ON free_applications
+CREATE POLICY "Allow public update" ON free_applications
     FOR UPDATE
-    USING (auth.role() = 'authenticated');
+    USING (true);
 
-CREATE POLICY "Allow authenticated delete" ON free_applications
+CREATE POLICY "Allow public delete" ON free_applications
     FOR DELETE
-    USING (auth.role() = 'authenticated');
+    USING (true);
+
