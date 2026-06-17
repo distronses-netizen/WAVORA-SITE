@@ -8,27 +8,29 @@ import { supabase } from "./supabase";
 export interface PlanPrices {
   annual: number;
   monthly: number;
+  oneTime: number;
 }
 
 export const BASE_PRICES: Record<string, PlanPrices> = {
-  basic: { annual: 399, monthly: 39 },
-  pro: { annual: 1199, monthly: 119 },
-  elite: { annual: 1999, monthly: 199 }
+  basic: { annual: 799, monthly: 79, oneTime: 49 },
+  pro: { annual: 1499, monthly: 149, oneTime: 99 },
+  elite: { annual: 2499, monthly: 249, oneTime: 149 }
 };
 
 export interface PlanOffer {
   planId: string; // "basic" | "pro" | "elite"
   annualOfferPrice: number | null; // e.g. 299 (null means no offer override)
   monthlyOfferPrice: number | null; // e.g. 39 (null means no offer override)
+  oneTimeOfferPrice: number | null; // e.g. 19
   offerLabel: string; // e.g. "Early Bird Offer", "Festival Special"
 }
 
 // Load current promotional offers
 export function getStoredOffers(): Record<string, PlanOffer> {
   const defaultOffers: Record<string, PlanOffer> = {
-    basic: { planId: "basic", annualOfferPrice: null, monthlyOfferPrice: null, offerLabel: "" },
-    pro: { planId: "pro", annualOfferPrice: null, monthlyOfferPrice: null, offerLabel: "" },
-    elite: { planId: "elite", annualOfferPrice: null, monthlyOfferPrice: null, offerLabel: "" }
+    basic: { planId: "basic", annualOfferPrice: null, monthlyOfferPrice: null, oneTimeOfferPrice: null, offerLabel: "" },
+    pro: { planId: "pro", annualOfferPrice: null, monthlyOfferPrice: null, oneTimeOfferPrice: null, offerLabel: "" },
+    elite: { planId: "elite", annualOfferPrice: null, monthlyOfferPrice: null, oneTimeOfferPrice: null, offerLabel: "" }
   };
 
   const stored = localStorage.getItem("wavora_plan_offers");
@@ -57,9 +59,9 @@ export async function syncOffersFromSupabase() {
     }
     if (data && data.length > 0) {
       const parsedOffers: Record<string, PlanOffer> = {
-        basic: { planId: "basic", annualOfferPrice: null, monthlyOfferPrice: null, offerLabel: "" },
-        pro: { planId: "pro", annualOfferPrice: null, monthlyOfferPrice: null, offerLabel: "" },
-        elite: { planId: "elite", annualOfferPrice: null, monthlyOfferPrice: null, offerLabel: "" }
+        basic: { planId: "basic", annualOfferPrice: null, monthlyOfferPrice: null, oneTimeOfferPrice: null, offerLabel: "" },
+        pro: { planId: "pro", annualOfferPrice: null, monthlyOfferPrice: null, oneTimeOfferPrice: null, offerLabel: "" },
+        elite: { planId: "elite", annualOfferPrice: null, monthlyOfferPrice: null, oneTimeOfferPrice: null, offerLabel: "" }
       };
 
       data.forEach((row: any) => {
@@ -68,6 +70,7 @@ export async function syncOffersFromSupabase() {
             planId: row.plan_id,
             annualOfferPrice: row.annual_offer_price !== null && row.annual_offer_price !== undefined ? Number(row.annual_offer_price) : null,
             monthlyOfferPrice: row.monthly_offer_price !== null && row.monthly_offer_price !== undefined ? Number(row.monthly_offer_price) : null,
+            oneTimeOfferPrice: row.one_time_offer_price !== null && row.one_time_offer_price !== undefined ? Number(row.one_time_offer_price) : null,
             offerLabel: row.offer_label || ""
           };
         }
@@ -99,6 +102,7 @@ export async function saveStoredOffers(offers: Record<string, PlanOffer>) {
             plan_id: planId,
             annual_offer_price: offer.annualOfferPrice,
             monthly_offer_price: offer.monthlyOfferPrice,
+            one_time_offer_price: offer.oneTimeOfferPrice,
             offer_label: offer.offerLabel,
             updated_at: new Date().toISOString()
           });
@@ -110,15 +114,15 @@ export async function saveStoredOffers(offers: Record<string, PlanOffer>) {
 }
 
 // Compute active discounted outcomes for display and transactions
-export function getPlanPriceDetails(planId: string, isAnnual: boolean) {
+export function getPlanPriceDetails(planId: string, isAnnual: boolean, isOneTime: boolean = false) {
   const base = BASE_PRICES[planId] || BASE_PRICES["pro"];
-  const basePrice = isAnnual ? base.annual : base.monthly;
+  const basePrice = isOneTime ? base.oneTime : (isAnnual ? base.annual : base.monthly);
   
   const offers = getStoredOffers();
   const offer = offers[planId];
   
   const offerPrice = offer 
-    ? (isAnnual ? offer.annualOfferPrice : offer.monthlyOfferPrice)
+    ? (isOneTime ? offer.oneTimeOfferPrice : (isAnnual ? offer.annualOfferPrice : offer.monthlyOfferPrice))
     : null;
     
   const hasOffer = offerPrice !== null && offerPrice !== undefined && offerPrice > 0 && offerPrice < basePrice;
@@ -132,6 +136,6 @@ export function getPlanPriceDetails(planId: string, isAnnual: boolean) {
     offerPrice,
     discountPercent,
     offerLabel: (hasOffer && offer?.offerLabel) ? offer.offerLabel : "",
-    period: isAnnual ? "year" : "month"
+    period: isOneTime ? "one-time release" : (isAnnual ? "year" : "month")
   };
 }

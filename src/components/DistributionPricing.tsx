@@ -273,17 +273,9 @@ export default function DistributionPricing() {
                 </div>
 
                 {(() => {
-                  if (pricingMode === "single") {
-                    return (
-                      <div className="flex flex-col gap-1.5 mb-2">
-                        <div className="flex items-baseline gap-1.5 flex-wrap">
-                          <span className="text-4xl sm:text-5xl font-mono font-extrabold text-white tracking-tight">{plan.price}</span>
-                          <span className="text-gray-400 text-xs">/ {plan.period}</span>
-                        </div>
-                      </div>
-                    );
-                  }
-                  const priceInfo = getPlanPriceDetails(plan.id, isAnnual);
+                  const isOneTime = pricingMode === "single";
+                  const priceInfo = getPlanPriceDetails(plan.id, pricingMode === "monthly" ? false : isAnnual, isOneTime);
+                  
                   return (
                     <div className="flex flex-col gap-1.5 mb-2">
                       <div className="flex items-baseline gap-1.5 flex-wrap">
@@ -295,7 +287,7 @@ export default function DistributionPricing() {
                         ) : (
                           <span className="text-4xl sm:text-5xl font-mono font-extrabold text-white tracking-tight">₹{priceInfo.basePrice}</span>
                         )}
-                        <span className="text-gray-400 text-xs">/ {plan.period}</span>
+                        <span className="text-gray-400 text-xs">/ {priceInfo.period}</span>
                       </div>
                       {priceInfo.hasOffer && (
                         <div className="flex flex-wrap items-center gap-1.5">

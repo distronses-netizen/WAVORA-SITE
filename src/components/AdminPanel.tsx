@@ -14,7 +14,33 @@ import Logo from "./Logo";
 import { getStoredOffers, saveStoredOffers, getPlanPriceDetails, BASE_PRICES } from "../lib/pricing";
 import { supabase } from "../lib/supabase";
 
-const SUPABASE_SQL_CODE = `-- 1. CREATE TABLES WITH STABLE RELATIONSHIPS AND COLUMNS
+const SUPABASE_SQL_CODE = `-- 0. CREATE PLAN OFFERS TABLE (PROMOTIONAL PRICING)
+CREATE TABLE IF NOT EXISTS public.plan_offers (
+    plan_id TEXT PRIMARY KEY,
+    annual_offer_price DECIMAL(10, 2),
+    monthly_offer_price DECIMAL(10, 2),
+    one_time_offer_price DECIMAL(10, 2),
+    offer_label TEXT,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+ALTER TABLE public.plan_offers ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS wavora_policy_select_plan_offers ON public.plan_offers;
+DROP POLICY IF EXISTS wavora_policy_insert_plan_offers ON public.plan_offers;
+DROP POLICY IF EXISTS wavora_policy_update_plan_offers ON public.plan_offers;
+DROP POLICY IF EXISTS wavora_policy_delete_plan_offers ON public.plan_offers;
+CREATE POLICY wavora_policy_select_plan_offers ON public.plan_offers FOR SELECT USING (true);
+CREATE POLICY wavora_policy_insert_plan_offers ON public.plan_offers FOR INSERT WITH CHECK (true);
+CREATE POLICY wavora_policy_update_plan_offers ON public.plan_offers FOR UPDATE USING (true);
+CREATE POLICY wavora_policy_delete_plan_offers ON public.plan_offers FOR DELETE USING (true);
+
+-- Ensure fields exist on existing table setups as well
+ALTER TABLE public.plan_offers ADD COLUMN IF NOT EXISTS annual_offer_price DECIMAL(10, 2);
+ALTER TABLE public.plan_offers ADD COLUMN IF NOT EXISTS monthly_offer_price DECIMAL(10, 2);
+ALTER TABLE public.plan_offers ADD COLUMN IF NOT EXISTS one_time_offer_price DECIMAL(10, 2);
+ALTER TABLE public.plan_offers ADD COLUMN IF NOT EXISTS offer_label TEXT;
+
+-- 1. CREATE TABLES WITH STABLE RELATIONSHIPS AND COLUMNS
 CREATE TABLE IF NOT EXISTS public.applications (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     user_id UUID,
@@ -52,6 +78,9 @@ CREATE TABLE IF NOT EXISTS public.single_track_releases (
     featured_artists TEXT,
     genre TEXT NOT NULL,
     sub_genre TEXT,
+    composer TEXT,
+    lyricist TEXT,
+    producer TEXT,
     license_type TEXT DEFAULT 'Original',
     release_date TEXT,
     label_name TEXT,
@@ -78,6 +107,9 @@ ALTER TABLE public.single_track_releases ADD COLUMN IF NOT EXISTS artist TEXT;
 ALTER TABLE public.single_track_releases ADD COLUMN IF NOT EXISTS featured_artists TEXT;
 ALTER TABLE public.single_track_releases ADD COLUMN IF NOT EXISTS genre TEXT;
 ALTER TABLE public.single_track_releases ADD COLUMN IF NOT EXISTS sub_genre TEXT;
+ALTER TABLE public.single_track_releases ADD COLUMN IF NOT EXISTS composer TEXT;
+ALTER TABLE public.single_track_releases ADD COLUMN IF NOT EXISTS lyricist TEXT;
+ALTER TABLE public.single_track_releases ADD COLUMN IF NOT EXISTS producer TEXT;
 ALTER TABLE public.single_track_releases ADD COLUMN IF NOT EXISTS license_type TEXT DEFAULT 'Original';
 ALTER TABLE public.single_track_releases ADD COLUMN IF NOT EXISTS release_date TEXT;
 ALTER TABLE public.single_track_releases ADD COLUMN IF NOT EXISTS label_name TEXT;
@@ -358,6 +390,9 @@ Primary Artist(s): ${single.artist}
 Featured Artist(s): ${single.featured_artists || 'None'}
 Primary Genre: ${primaryGenre}
 Sub Genre: ${subGenre}
+Composer: ${single.composer || 'N/A'}
+Lyricist: ${single.lyricist || 'N/A'}
+Producer: ${single.producer || 'N/A'}
 License Type: ${single.license_type || 'Original'}
 Target Release Date: ${single.release_date || 'Not specified'}
 Publisher / Record Label: ${single.label_name || 'Independent (Wavora Records)'}
@@ -927,9 +962,9 @@ ${single.lyrics || 'No associated lyrics provided.'}
   const handleClearOffers = () => {
     if (confirm("Reset promotional offers back to normal? This will clear all active discount prices.")) {
       const resetOffers = {
-        basic: { planId: "basic", annualOfferPrice: null, monthlyOfferPrice: null, offerLabel: "" },
-        pro: { planId: "pro", annualOfferPrice: null, monthlyOfferPrice: null, offerLabel: "" },
-        elite: { planId: "elite", annualOfferPrice: null, monthlyOfferPrice: null, offerLabel: "" }
+        basic: { planId: "basic", annualOfferPrice: null, monthlyOfferPrice: null, oneTimeOfferPrice: null, offerLabel: "" },
+        pro: { planId: "pro", annualOfferPrice: null, monthlyOfferPrice: null, oneTimeOfferPrice: null, offerLabel: "" },
+        elite: { planId: "elite", annualOfferPrice: null, monthlyOfferPrice: null, oneTimeOfferPrice: null, offerLabel: "" }
       };
       saveStoredOffers(resetOffers);
       setOffers(resetOffers);
@@ -2311,6 +2346,23 @@ ${single.lyrics || 'No associated lyrics provided.'}
 
                       <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-0.5">
+                          <span className="text-[8px] text-gray-500 uppercase tracking-widest block font-mono">Composer</span>
+                          <span className="text-xs font-semibold text-white block truncate">{selectedSingleRelease.composer || "N/A"}</span>
+                        </div>
+                        <div className="space-y-0.5">
+                          <span className="text-[8px] text-gray-500 uppercase tracking-widest block font-mono">Lyricist</span>
+                          <span className="text-xs font-semibold text-white block truncate">{selectedSingleRelease.lyricist || "N/A"}</span>
+                        </div>
+                        <div className="space-y-0.5">
+                          <span className="text-[8px] text-gray-500 uppercase tracking-widest block font-mono">Producer</span>
+                          <span className="text-xs font-semibold text-white block truncate">{selectedSingleRelease.producer || "N/A"}</span>
+                        </div>
+                      </div>
+
+                      <div className="h-[1px] w-full bg-white/5" />
+
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-0.5">
                           <span className="text-[8px] text-gray-500 uppercase tracking-widest block font-mono">Licensing Type</span>
                           <span className="text-xs font-semibold text-purple-200 block uppercase font-mono">{selectedSingleRelease.license_type || "not specified"}</span>
                         </div>
@@ -2672,7 +2724,7 @@ ${single.lyrics || 'No associated lyrics provided.'}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               {(["basic", "pro", "elite"] as const).map((planId) => {
                 const baseInfo = BASE_PRICES[planId];
-                const activeOffer = offers[planId] || { planId, annualOfferPrice: null, monthlyOfferPrice: null, offerLabel: "" };
+                const activeOffer = offers[planId] || { planId, annualOfferPrice: null, monthlyOfferPrice: null, oneTimeOfferPrice: null, offerLabel: "" };
 
                 // Local dynamic calculation variables
                 const annualBase = baseInfo.annual;
@@ -2770,7 +2822,41 @@ ${single.lyrics || 'No associated lyrics provided.'}
                         )}
                       </div>
 
-                      {/* 3. Offer label Tagline */}
+                      {/* 3. One-Time Setup Custom Pricing */}
+                      <div className="space-y-1.5 p-3 rounded-lg bg-black/40 border border-white/5">
+                        <div className="flex justify-between items-center">
+                          <span className="text-[9px] font-bold text-cyan-400 uppercase tracking-wider font-mono">One-Time Billing Offer</span>
+                          <span className="text-[10px] text-gray-500 font-mono">Base: ₹{baseInfo.oneTime}/release</span>
+                        </div>
+                        <div className="flex items-center gap-2 mt-1">
+                          <div className="text-white text-xs font-mono font-bold bg-[#0B0B0F] border border-white/10 px-2 py-1.5 rounded-lg select-none">₹</div>
+                          <input
+                            type="number"
+                            min="1"
+                            max={baseInfo.oneTime - 1}
+                            placeholder="Promo price (e.g. 19)"
+                            value={activeOffer.oneTimeOfferPrice !== null && activeOffer.oneTimeOfferPrice !== undefined ? activeOffer.oneTimeOfferPrice : ""}
+                            onChange={(e) => {
+                              const val = e.target.value === "" ? null : Number(e.target.value);
+                              const updated = {
+                                ...offers,
+                                [planId]: { ...activeOffer, oneTimeOfferPrice: val }
+                              };
+                              handleSaveOffers(updated);
+                            }}
+                            className="flex-grow bg-[#050507] border border-white/10 rounded-lg px-2.5 py-1.5 text-xs text-white font-mono placeholder-gray-600 focus:outline-none focus:ring-1 focus:ring-cyan-500"
+                          />
+                        </div>
+                        {(activeOffer.oneTimeOfferPrice !== null && activeOffer.oneTimeOfferPrice !== undefined && activeOffer.oneTimeOfferPrice < baseInfo.oneTime) ? (
+                          <p className="text-[9px] text-emerald-400 font-bold tracking-wider mt-1 uppercase flex items-center gap-1">
+                            <Percent className="h-3 w-3" /> Resulting Discount: {Math.round(((baseInfo.oneTime - activeOffer.oneTimeOfferPrice) / baseInfo.oneTime) * 100)}% OFF
+                          </p>
+                        ) : (
+                          <p className="text-[8px] text-gray-500 mt-1">Normal pricing applies. Enter value less than ₹{baseInfo.oneTime} to apply offer cut.</p>
+                        )}
+                      </div>
+
+                      {/* 4. Offer label Tagline */}
                       <div className="space-y-1">
                         <label className="text-[9px] font-bold text-gray-500 uppercase tracking-widest font-mono">Promotional Tag Description</label>
                         <input

@@ -59,6 +59,9 @@ export default function SingleTrackDistributor({ selectedPlanId, onBackToMain }:
     title: "",
     genre: "Pop",
     subGenre: "",
+    composer: "",
+    lyricist: "",
+    producer: "",
     licenseType: "Original",
     releaseDate: new Date(Date.now() + 7 * 24 * 3600 * 1000).toISOString().split("T")[0],
     labelName: "",
@@ -369,6 +372,18 @@ export default function SingleTrackDistributor({ selectedPlanId, onBackToMain }:
       errors.subGenre = "Sub-genre selection is compulsory.";
     }
 
+    if (!formData.composer.trim()) {
+      errors.composer = "Composer name is compulsory.";
+    }
+
+    if (!formData.lyricist.trim()) {
+      errors.lyricist = "Lyricist name is compulsory.";
+    }
+
+    if (!formData.producer.trim()) {
+      errors.producer = "Producer name is compulsory.";
+    }
+
     primaryArtists.forEach((a, idx) => {
       if (a.name.trim() !== "") {
         if (!a.instagramId.trim()) {
@@ -572,7 +587,10 @@ export default function SingleTrackDistributor({ selectedPlanId, onBackToMain }:
         spotify_profile: spotifyProfileVal,
         apple_music_profile: appleProfileVal,
         instagram_profile: instagramProfileVal,
-        sub_genre: formData.subGenre
+        sub_genre: formData.subGenre,
+        composer: formData.composer,
+        lyricist: formData.lyricist,
+        producer: formData.producer
       };
 
       let insertedRow: any = null;
@@ -625,6 +643,9 @@ export default function SingleTrackDistributor({ selectedPlanId, onBackToMain }:
             apple_music_profile: appleProfileVal,
             instagram_profile: instagramProfileVal,
             sub_genre: formData.subGenre,
+            composer: formData.composer,
+            lyricist: formData.lyricist,
+            producer: formData.producer,
             date: new Date().toISOString()
           });
           localStorage.setItem(key, JSON.stringify(list));
@@ -1291,6 +1312,69 @@ export default function SingleTrackDistributor({ selectedPlanId, onBackToMain }:
                             )}
                           </div>
                         </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                          <div className="space-y-1.5">
+                            <label className="text-[10px] font-bold text-gray-450 uppercase tracking-widest block font-mono">
+                              Composer Name <span className="text-red-400 font-bold">* Compulsory</span>
+                            </label>
+                            <input
+                              type="text"
+                              value={formData.composer}
+                              onChange={(e) => setFormData(prev => ({ ...prev, composer: e.target.value }))}
+                              placeholder="Who composed the music?"
+                              className={`w-full bg-[#050508] border rounded-xl px-3.5 py-3 text-xs text-white placeholder-white/20 focus:outline-none focus:ring-1 focus:ring-purple-500 transition-all font-sans ${
+                                formErrors.composer ? "border-red-500/50 focus:ring-red-500" : "border-white/10"
+                              }`}
+                            />
+                            {formErrors.composer && (
+                              <p className="text-[10px] text-red-400 flex items-center gap-1 font-mono">
+                                <AlertCircle className="h-3 w-3" /> {formErrors.composer}
+                              </p>
+                            )}
+                          </div>
+
+                          <div className="space-y-1.5">
+                            <label className="text-[10px] font-bold text-gray-450 uppercase tracking-widest block font-mono">
+                              Lyricist Name <span className="text-red-400 font-bold">* Compulsory</span>
+                            </label>
+                            <input
+                              type="text"
+                              value={formData.lyricist}
+                              onChange={(e) => setFormData(prev => ({ ...prev, lyricist: e.target.value }))}
+                              placeholder="Who wrote the lyrics?"
+                              className={`w-full bg-[#050508] border rounded-xl px-3.5 py-3 text-xs text-white placeholder-white/20 focus:outline-none focus:ring-1 focus:ring-purple-500 transition-all font-sans ${
+                                formErrors.lyricist ? "border-red-500/50 focus:ring-red-500" : "border-white/10"
+                              }`}
+                            />
+                            {formErrors.lyricist && (
+                              <p className="text-[10px] text-red-400 flex items-center gap-1 font-mono">
+                                <AlertCircle className="h-3 w-3" /> {formErrors.lyricist}
+                              </p>
+                            )}
+                          </div>
+
+                          <div className="space-y-1.5">
+                            <label className="text-[10px] font-bold text-gray-450 uppercase tracking-widest block font-mono">
+                              Producer Name <span className="text-red-400 font-bold">* Compulsory</span>
+                            </label>
+                            <input
+                              type="text"
+                              value={formData.producer}
+                              onChange={(e) => setFormData(prev => ({ ...prev, producer: e.target.value }))}
+                              placeholder="Who produced the track?"
+                              className={`w-full bg-[#050508] border rounded-xl px-3.5 py-3 text-xs text-white placeholder-white/20 focus:outline-none focus:ring-1 focus:ring-purple-500 transition-all font-sans ${
+                                formErrors.producer ? "border-red-500/50 focus:ring-red-500" : "border-white/10"
+                              }`}
+                            />
+                            {formErrors.producer && (
+                              <p className="text-[10px] text-red-400 flex items-center gap-1 font-mono">
+                                <AlertCircle className="h-3 w-3" /> {formErrors.producer}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+
                       </div>
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -1899,6 +1983,9 @@ ALTER TABLE public.single_track_releases ADD COLUMN IF NOT EXISTS spotify_profil
 ALTER TABLE public.single_track_releases ADD COLUMN IF NOT EXISTS apple_music_profile TEXT;
 ALTER TABLE public.single_track_releases ADD COLUMN IF NOT EXISTS instagram_profile TEXT;
 ALTER TABLE public.single_track_releases ADD COLUMN IF NOT EXISTS sub_genre TEXT;
+ALTER TABLE public.single_track_releases ADD COLUMN IF NOT EXISTS composer TEXT;
+ALTER TABLE public.single_track_releases ADD COLUMN IF NOT EXISTS lyricist TEXT;
+ALTER TABLE public.single_track_releases ADD COLUMN IF NOT EXISTS producer TEXT;
 
 -- Command below clears the Supabase PostgREST PGRST204 schema cache instantly:
 NOTIFY pgrst, 'reload schema';`}
@@ -1906,7 +1993,7 @@ NOTIFY pgrst, 'reload schema';`}
                             <button
                               type="button"
                               onClick={() => {
-                                const sql = `ALTER TABLE public.single_track_releases ADD COLUMN IF NOT EXISTS is_explicit BOOLEAN DEFAULT false;\nALTER TABLE public.single_track_releases ADD COLUMN IF NOT EXISTS spotify_profile TEXT;\nALTER TABLE public.single_track_releases ADD COLUMN IF NOT EXISTS apple_music_profile TEXT;\nALTER TABLE public.single_track_releases ADD COLUMN IF NOT EXISTS instagram_profile TEXT;\nALTER TABLE public.single_track_releases ADD COLUMN IF NOT EXISTS sub_genre TEXT;\nNOTIFY pgrst, 'reload schema';`;
+                                const sql = `ALTER TABLE public.single_track_releases ADD COLUMN IF NOT EXISTS is_explicit BOOLEAN DEFAULT false;\nALTER TABLE public.single_track_releases ADD COLUMN IF NOT EXISTS spotify_profile TEXT;\nALTER TABLE public.single_track_releases ADD COLUMN IF NOT EXISTS apple_music_profile TEXT;\nALTER TABLE public.single_track_releases ADD COLUMN IF NOT EXISTS instagram_profile TEXT;\nALTER TABLE public.single_track_releases ADD COLUMN IF NOT EXISTS sub_genre TEXT;\nALTER TABLE public.single_track_releases ADD COLUMN IF NOT EXISTS composer TEXT;\nALTER TABLE public.single_track_releases ADD COLUMN IF NOT EXISTS lyricist TEXT;\nALTER TABLE public.single_track_releases ADD COLUMN IF NOT EXISTS producer TEXT;\nNOTIFY pgrst, 'reload schema';`;
                                 navigator.clipboard.writeText(sql);
                                 setCopiedMigrationSql(true);
                                 setTimeout(() => setCopiedMigrationSql(false), 2000);
