@@ -684,12 +684,12 @@ export default function ApplicationModal({
                           { 
                             id: "basic", 
                             title: pricingMode === "single" ? "Basic Single" : "Basic", 
-                            features: pricingMode === "single" ? "10 stores, 80% royalty" : "150 stores, 80% royalty" 
+                            features: pricingMode === "single" ? "150+ stores, 80% royalty" : "150 stores, 80% royalty" 
                           },
                           { 
                             id: "pro", 
                             title: pricingMode === "single" ? "Pro Single" : "Pro Artist", 
-                            features: pricingMode === "single" ? "50 stores, 90% royalty" : "150 stores, 90% royalty" 
+                            features: pricingMode === "single" ? "150+ stores, 90% royalty" : "150 stores, 90% royalty" 
                           },
                           { 
                             id: "elite", 

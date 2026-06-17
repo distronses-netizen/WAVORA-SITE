@@ -75,7 +75,7 @@ export default function DistributionPricing() {
       features: [
         "Distribute to 150+ platforms",
         "100% royalty split to absolute artist",
-        "1-2 days fastest express release",
+        "2-3 days fastest express release",
         "Fastest WhatsApp, call & email support",
         "Get showcased directly at Wavora events",
         "Spotify and Apple Artists verification",
@@ -98,7 +98,7 @@ export default function DistributionPricing() {
       description: "Launch a single track directly to top platforms. Standard validation & 80% split.",
       popular: false,
       features: [
-        "Distribute single to 10 streaming stores",
+        "Distribute single to 150+ streaming stores",
         "80% absolute artist royalties",
         "Standard 7-day launch turnaround",
         "Verify raw WAV master quality",
@@ -132,7 +132,7 @@ export default function DistributionPricing() {
       description: "Direct elite launch featuring custom record label branding and Atmos validation.",
       popular: false,
       features: [
-        "Express 1-2 days fastest release",
+        "Express 2-3 days fastest release",
         "100% absolute revenues to artist",
         "Distribute single to 150+ global stores",
         "YouTube Content ID protection",
@@ -148,7 +148,7 @@ export default function DistributionPricing() {
   const comparisons: FeatureComparison[] = [
     { category: "Distribution", featureName: "Supported Platforms", basic: "150 platforms", pro: "150 platforms", elite: "150+ platforms" },
     { category: "Distribution", featureName: "Royalty Percentage", basic: "80%", pro: "90%", elite: "100%" },
-    { category: "Distribution", featureName: "Release Turnaround", basic: "7 days", pro: "3-5 days", elite: "1-2 days" },
+    { category: "Distribution", featureName: "Release Turnaround", basic: "7 days", pro: "3-5 days", elite: "2-3 days" },
     { category: "Support", featureName: "Channels Covered", basic: "WhatsApp, call & email", pro: "Priority WhatsApp, email, call", elite: "Fastest WhatsApp, call, email" },
     { category: "Verification", featureName: "OAC (Official Artist Channel)", basic: true, pro: true, elite: true },
     { category: "Verification", featureName: "Spotify & Apple verification", basic: false, pro: true, elite: true },
@@ -338,7 +338,7 @@ export default function DistributionPricing() {
                   onClick={(e) => {
                     e.preventDefault();
                     if (pricingMode === "single") {
-                      window.dispatchEvent(new CustomEvent("open-apply-modal", { detail: { planId: `${plan.id}_single`, isAnnual: false } }));
+                      window.dispatchEvent(new CustomEvent("open-single-track-distribute", { detail: { planId: plan.id } }));
                     } else {
                       window.dispatchEvent(new CustomEvent("open-apply-modal", { detail: { planId: plan.id, isAnnual } }));
                     }

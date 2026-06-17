@@ -8,7 +8,7 @@ import {
   X, Check, Upload, ArrowRight, Sparkles, AlertCircle, Clock, 
   CheckCircle2, ShieldCheck, Mail, User, Radio, Phone, HelpCircle,
   Copy, Music, Globe, Server, Star, Lock, CreditCard, ChevronRight,
-  Database, Info, RefreshCw, Layers, Sliders, Play
+  Database, Info, RefreshCw, Layers, Sliders, Play, AlertTriangle
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { supabase } from "../lib/supabase";
@@ -18,23 +18,70 @@ interface SingleTrackDistributorProps {
   onBackToMain: () => void;
 }
 
+const genreMap: Record<string, string[]> = {
+  "Alternative": ["College Rock", "Goth Rock", "Grunge", "Indie Rock", "New Wave", "Punk"],
+  "Anime": ["Action", "Mecha", "Vocaloid", "J-Pop", "J-Rock"],
+  "Blues": ["Acoustic Blues", "Chicago Blues", "Classic Blues", "Contemporary Blues", "Country Blues", "Delta Blues", "Electric Blues"],
+  "Brazilian": ["Axé", "Bossa Nova", "Choro", "Forró", "Frevo", "MPB", "Pagode", "Samba", "Sertanejo"],
+  "Children's Music": ["Lullabies", "Sing-Along", "Stories"],
+  "Christian & Gospel": ["CCM", "Christian Metal", "Christian Pop", "Christian Rap", "Christian Rock", "Classic Christian", "Contemporary Gospel", "Gospel", "Southern Gospel", "Traditional Gospel"],
+  "Classical": ["Avant-Garde", "Baroque", "Chamber Music", "Chant", "Choral", "Classical Crossover", "Early Music", "High Classical", "Impressionist", "Medieval", "Minimalism", "Modern Composition", "Opera", "Orchestral", "Renaissance", "Romantic"],
+  "Comedy": ["Novelty", "Standup Comedy"],
+  "Country": ["Alternative Country", "Americana", "Bluegrass", "Contemporary Bluegrass", "Contemporary Country", "Country Gospel", "Honky Tonk", "Outlaw Country", "Traditional Bluegrass", "Traditional Country", "Urban Cowboy"],
+  "Dance": ["Breakbeat", "Exercise", "Garage", "Hardcore", "House", "Jungle/Drum'n'bass", "Techno", "Trance"],
+  "Electronic": ["Ambient", "Crossover", "Downtempo", "Electronic Art Music", "IDM/Experimental", "Industrial", "Pop/Dance", "Synthwave", "Dubstep"],
+  "Folk": ["Contemporary Folk", "Traditional Folk"],
+  "Hip-Hop / Rap": ["Alternative Rap", "Bounce", "Dirty South", "East Coast Rap", "Gangsta Rap", "Hardcore Rap", "Hip-Hop", "Latin Rap", "Old School Rap", "Rap", "Underground Rap", "West Coast Rap"],
+  "Holiday": ["Chanukah", "Christmas", "Easter", "Halloween", "Holiday: Other", "Thanksgiving"],
+  "Indian": ["Indian Classical", "Indian Pop", "Ghazal", "Bollywood", "Tamil", "Telugu", "Regional Indian"],
+  "Instrumental": ["March (Instrumental)"],
+  "Jazz": ["Avant-Garde Jazz", "Big Band", "Bop", "Contemporary Jazz", "Cool", "Crossover Jazz", "Dixieland", "Fusion", "Hard Bop", "Latin Jazz", "Mainstream Jazz", "Ragtime", "Smooth Jazz", "Trad Jazz"],
+  "Latin": ["Alternative & Rock Latino", "Baladas y Boleros", "Brazilian", "Contemporary Latin", "Latin Jazz", "Pop Latino", "Raíces", "Reggaeton y Hip-Hop", "Regional Mexicano", "Salsa y Tropical"],
+  "Metal": ["Alternative Metal", "Black Metal", "Death Metal", "Doom Metal", "Goth Metal", "Hair Metal", "Heavy Metal", "Industrial Metal", "Metalcore", "Nu-Metal", "Power Metal", "Prog-Metal", "Sludge", "Speed Metal", "Thrash Metal"],
+  "New Age": ["Environmental", "Healing", "Meditation", "Nature", "Relaxation", "Travel"],
+  "Pop": ["Adult Contemporary", "Britpop", "C-Pop", "Cantopop", "Chamber Pop", "Dance Pop", "Idol", "J-Pop", "K-Pop", "Pop/Rock", "Singer/Songwriter", "Soft Rock", "Teen Pop"],
+  "Punk": ["Hardcore Punk", "Pop Punk", "Skate Punk"],
+  "R&B / Soul": ["Contemporary R&B", "Disco", "Doo Wop", "Funk", "Motown", "Neo-Soul", "Quiet Storm", "Soul"],
+  "Reggae": ["Dancehall", "Dub", "Lovers Rock", "Modern Dancehall", "Ragga", "Reggae En Español", "Reggae Roots", "Rocksteady", "Ska"],
+  "Rock": ["Adult Alternative", "American Trad Rock", "Arena Rock", "Blues-Rock", "British Invasion", "Death Metal/Black Metal", "Glam Rock", "Hair Metal", "Hard Rock", "Metal", "Jam Bands", "Prog-Rock/Art Rock", "Psychedelic", "Roots Rock", "Singer/Songwriter", "Southern Rock", "Surf", "Tex-Mex"],
+  "Singer/Songwriter": ["Alternative Folk", "Contemporary Folk", "Contemporary Singer/Songwriter", "Indie Folk"],
+  "Soundtrack": ["Foreign Cinema", "Musicals", "Original Score", "Soundtrack", "TV Soundtrack"],
+  "Spoken Word": ["Audiobooks", "Poetry", "Storytelling"],
+  "World": ["Africa", "Afro-Beat", "Afro-Pop", "Asia", "Australia", "Bossa Nova", "Cajun", "Caribbean", "Celtic", "Celtic Folk", "Contemporary Celtic", "Coupé-Décalé", "Dangdut", "Drinking Songs", "Drone", "Europe", "France", "Hawaii", "Indian Classical", "Indian Pop", "Iberia", "Japanese Pop", "Klezmer", "Middle East", "North America", "Ode", "Piphat", "Polka", "Soca", "South America", "South Africa", "Traditional Celtic", "Worldbeat", "Zydeco"]
+};
+
 export default function SingleTrackDistributor({ selectedPlanId, onBackToMain }: SingleTrackDistributorProps) {
-  const [currentStep, setCurrentStep] = useState<"dashboard" | "payment" | "success">("dashboard");
+  const [currentStep, setCurrentStep] = useState<"contact" | "dashboard" | "payment" | "success">("contact");
   const [planId, setPlanId] = useState<"basic" | "pro" | "elite">(selectedPlanId);
 
   // Form input states
   const [formData, setFormData] = useState({
     title: "",
-    artist: "",
-    featuredArtists: "",
-    genre: "Electronic",
+    genre: "Pop",
+    subGenre: "",
+    licenseType: "Original",
     releaseDate: new Date(Date.now() + 7 * 24 * 3600 * 1000).toISOString().split("T")[0],
     labelName: "",
     publisher: "Wavora Records",
     isDolbyAtmos: false,
     hasContentId: false,
-    lyrics: ""
+    lyrics: "",
+    spotifyProfile: "",
+    appleMusicProfile: "",
+    instagramId: "",
+    email: "",
+    contactNumber: "",
+    isExplicit: "no"
   });
+
+  const [primaryArtists, setPrimaryArtists] = useState([{ id: Date.now(), name: "", instagramId: "", hasSpotify: "no", hasApple: "no", spotifyProfile: "", appleMusicProfile: "" }]);
+  const [featuredArtists, setFeaturedArtists] = useState([{ id: Date.now() + 1, name: "", instagramId: "", hasSpotify: "no", hasApple: "no", spotifyProfile: "", appleMusicProfile: "" }]);
+
+  // Artwork drag/drop upload state
+  const [artworkFile, setArtworkFile] = useState<File | null>(null);
+  const [artworkError, setArtworkError] = useState("");
+  const artworkInputRef = useRef<HTMLInputElement>(null);
+  const [artworkDragActive, setArtworkDragActive] = useState(false);
 
   // Audio drag/drop upload state
   const [audioFile, setAudioFile] = useState<File | null>(null);
@@ -51,6 +98,8 @@ export default function SingleTrackDistributor({ selectedPlanId, onBackToMain }:
   const [receiptDragActive, setReceiptDragActive] = useState(false);
   const [isSubmittingPayment, setIsSubmittingPayment] = useState(false);
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+  const [supabaseError, setSupabaseError] = useState<string | null>(null);
+  const [copiedMigrationSql, setCopiedMigrationSql] = useState(false);
   const paymentFileInputRef = useRef<HTMLInputElement>(null);
 
   // Plan Details Map
@@ -60,10 +109,10 @@ export default function SingleTrackDistributor({ selectedPlanId, onBackToMain }:
       price: 19,
       royalty: "80%",
       turnaround: "7 days",
-      platformsCount: 10,
-      platformsList: ["Spotify", "YouTube Music", "Amazon Music", "Pandora", "Deezer"],
+      platformsCount: "150+",
+      platformsList: ["Spotify", "YouTube Music", "Amazon Music", "Pandora", "Deezer", "And 140+ more..."],
       features: [
-        "Core distribution to 10 streaming stores",
+        "Core distribution to 150+ streaming stores",
         "80% absolute artist royalties",
         "Wavora general label placeholder",
         "WAV audio master checks",
@@ -91,7 +140,7 @@ export default function SingleTrackDistributor({ selectedPlanId, onBackToMain }:
       name: "Elite Single",
       price: 79,
       royalty: "100%",
-      turnaround: "1-2 days",
+      turnaround: "2-3 days",
       platformsCount: 150,
       platformsList: ["All 150+ international stores", "Instant Content ID protection", "Official Artist Channel (OAC) setup", "Airplay playlist placements", "Sina Weibo & Chinese mainland channels boost"],
       features: [
@@ -107,10 +156,105 @@ export default function SingleTrackDistributor({ selectedPlanId, onBackToMain }:
 
   const currentPlan = plansCatalog[planId];
 
-  // Sync initial inputs
+  // Prefill email from authenticated user on mount
+  useEffect(() => {
+    async function prefillEmail() {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user && user.email) {
+          setFormData(prev => ({ ...prev, email: user.email }));
+        }
+      } catch (err) {
+        console.warn("Could not prefill email from auth:", err);
+      }
+    }
+    prefillEmail();
+  }, []);
+
+  const validateContact = () => {
+    const errors: Record<string, string> = {};
+    if (!formData.email.trim()) {
+      errors.email = "Primary contact email address is required.";
+    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+      errors.email = "Please enter a valid email address.";
+    }
+    if (!formData.contactNumber.trim()) {
+      errors.contactNumber = "WhatsApp / Contact number is required for coordinate synchronization.";
+    } else if (formData.contactNumber.trim().length < 8) {
+      errors.contactNumber = "Please specify a valid mobile/WhatsApp number (at least 8 digits).";
+    }
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  // Sync initial inputs and update minimum release date based on selected plan
   useEffect(() => {
     setPlanId(selectedPlanId);
   }, [selectedPlanId]);
+
+  useEffect(() => {
+    let days = 7;
+    if (planId === "pro") days = 3;
+    if (planId === "elite") days = 2;
+    
+    const minDate = new Date(Date.now() + days * 24 * 3600 * 1000).toISOString().split("T")[0];
+    if (new Date(formData.releaseDate) < new Date(minDate)) {
+       setFormData(prev => ({...prev, releaseDate: minDate}));
+    }
+  }, [planId, formData.releaseDate]);
+
+  const getMinReleaseDate = () => {
+    let days = 7;
+    if (planId === "pro") days = 3;
+    if (planId === "elite") days = 2;
+    return new Date(Date.now() + days * 24 * 3600 * 1000).toISOString().split("T")[0];
+  };
+
+  // Artwork drag handlers
+  const handleArtworkDrag = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.type === "dragenter" || e.type === "dragover") {
+      setArtworkDragActive(true);
+    } else if (e.type === "dragleave") {
+      setArtworkDragActive(false);
+    }
+  };
+
+  const handleArtworkDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setArtworkDragActive(false);
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      handleArtworkFile(e.dataTransfer.files[0]);
+    }
+  };
+
+  const handleArtworkSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      handleArtworkFile(e.target.files[0]);
+    }
+  };
+
+  const handleArtworkFile = (file: File) => {
+    const isJpg = file.type === "image/jpeg" || file.name.toLowerCase().endsWith(".jpg") || file.name.toLowerCase().endsWith(".jpeg");
+    if (!isJpg) {
+      setArtworkError("Artwork must be a JPG file.");
+      return;
+    }
+    
+    const img = new Image();
+    img.src = URL.createObjectURL(file);
+    img.onload = () => {
+      if (img.width !== 3000 || img.height !== 3000) {
+        setArtworkError("Artwork must be exactly 3000x3000px resolution.");
+        setArtworkFile(null);
+      } else {
+        setArtworkError("");
+        setArtworkFile(file);
+      }
+    };
+  };
 
   // Audio drag handlers
   const handleAudioDrag = (e: React.DragEvent) => {
@@ -140,9 +284,9 @@ export default function SingleTrackDistributor({ selectedPlanId, onBackToMain }:
 
   // Validate Audio and simulate high-speed server parsing
   const handleAudioFile = (file: File) => {
-    const isAudio = file.type.startsWith("audio/") || file.name.endsWith(".wav") || file.name.endsWith(".mp3") || file.name.endsWith(".flac");
+    const isAudio = file.type === "audio/wav" || file.name.toLowerCase().endsWith(".wav");
     if (!isAudio) {
-      setAudioError("Invalid file type. Please share standard audio formats (.wav, .mp3, .flac).");
+      setAudioError("Invalid file type. Only WAV format is allowed.");
       return;
     }
     setAudioError("");
@@ -217,8 +361,52 @@ export default function SingleTrackDistributor({ selectedPlanId, onBackToMain }:
   const validateDashboard = () => {
     const errors: Record<string, string> = {};
     if (!formData.title.trim()) errors.title = "Release Track or Single Title is required.";
-    if (!formData.artist.trim()) errors.artist = "Primary Artist name is required.";
-    if (!audioFile || isUploadingAudio) errors.audio = "A valid master audio upload is required to verify streams.";
+    const hasPrimaryArtist = primaryArtists.some(a => a.name.trim() !== "");
+    if (!hasPrimaryArtist) errors.artist = "At least one Primary Artist name is required.";
+    
+    // Sub-genre validation: compulsory
+    if (!formData.subGenre) {
+      errors.subGenre = "Sub-genre selection is compulsory.";
+    }
+
+    primaryArtists.forEach((a, idx) => {
+      if (a.name.trim() !== "") {
+        if (!a.instagramId.trim()) {
+          errors[`primaryInsta_${idx}`] = `Instagram is mandatory for ${a.name || "this artist"}.`;
+        }
+        if (a.hasSpotify === "yes") {
+          if (!a.spotifyProfile || !a.spotifyProfile.trim()) {
+            errors[`primarySpotify_${idx}`] = `Spotify link/ID is compulsory when mapping profile.`;
+          }
+        }
+        if (a.hasApple === "yes") {
+          if (!a.appleMusicProfile || !a.appleMusicProfile.trim()) {
+            errors[`primaryApple_${idx}`] = `Apple Music link/ID is compulsory when mapping profile.`;
+          }
+        }
+      }
+    });
+
+    featuredArtists.forEach((a, idx) => {
+      if (a.name.trim() !== "") {
+        if (!a.instagramId.trim()) {
+          errors[`featuredInsta_${idx}`] = `Instagram is mandatory for ${a.name || "this artist"}.`;
+        }
+        if (a.hasSpotify === "yes") {
+          if (!a.spotifyProfile || !a.spotifyProfile.trim()) {
+            errors[`featuredSpotify_${idx}`] = `Spotify link/ID is compulsory when mapping profile.`;
+          }
+        }
+        if (a.hasApple === "yes") {
+          if (!a.appleMusicProfile || !a.appleMusicProfile.trim()) {
+            errors[`featuredApple_${idx}`] = `Apple Music link/ID is compulsory when mapping profile.`;
+          }
+        }
+      }
+    });
+
+    if (!audioFile || isUploadingAudio) errors.audio = "A valid master audio (.wav) upload is required.";
+    if (!artworkFile) errors.artwork = "A valid artwork (3000x3000px JPG) is required.";
     if (planId === "elite" && !formData.labelName.trim()) {
       errors.labelName = "Custom publisher label name is required on the Elite single plan.";
     }
@@ -236,6 +424,7 @@ export default function SingleTrackDistributor({ selectedPlanId, onBackToMain }:
 
   const executeSandboxBypass = async () => {
     setIsSubmittingPayment(true);
+    setSupabaseError(null);
     
     let userIdValue = null;
     try {
@@ -247,58 +436,213 @@ export default function SingleTrackDistributor({ selectedPlanId, onBackToMain }:
       console.warn("Failed to retrieve user context for track logging:", e);
     }
 
-    const dbPayload = {
-      user_id: userIdValue,
-      title: formData.title,
-      artist: formData.artist,
-      featured_artists: formData.featuredArtists || null,
-      genre: formData.genre,
-      release_date: formData.releaseDate,
-      label_name: formData.labelName || null,
-      is_dolby_atmos: formData.isDolbyAtmos,
-      has_content_id: formData.hasContentId,
-      lyrics: formData.lyrics || null,
-      plan: planId,
-      price: currentPlan.price,
-      status: "Live & Transmitting"
-    };
+    const artistStr = primaryArtists.map(a => a.name.trim()).filter(Boolean).join(", ");
+    const featuredStr = featuredArtists.map(a => a.name.trim()).filter(Boolean).join(", ");
 
-    // Attempt direct save to Supabase
+    let audioUrlValue = null;
+    let artworkUrlValue = null;
+
     try {
-      const { error: dbErr } = await supabase.from("single_track_releases").insert([dbPayload]);
-      if (dbErr) {
-        console.warn("Supabase single track release bypass (Ensure schema exists in DB):", dbErr);
-      }
-    } catch (err) {
-      console.warn("Offline bypass activated:", err);
-    }
+      // 1. Upload Artwork to Supabase Storage
+      if (artworkFile) {
+        try {
+          const fileExt = artworkFile.name.split('.').pop() || 'jpg';
+          const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 11)}.${fileExt}`;
+          const filePath = `artwork/${fileName}`;
+          const { data, error } = await supabase.storage
+            .from("single-releases")
+            .upload(filePath, artworkFile, { cacheControl: '3600', upsert: true });
 
-    setTimeout(() => {
-      setIsSubmittingPayment(false);
-      setCurrentStep("success");
-      
-      // Save campaign locally
-      try {
-        const key = "wavora_single_track_releases";
-        const saved = localStorage.getItem(key);
-        const list = saved ? JSON.parse(saved) : [];
-        list.unshift({
-          id: `single-${Date.now()}`,
-          title: formData.title,
-          artist: formData.artist,
-          plan: planId,
-          price: currentPlan.price,
-          status: "Live & Transmitting",
-          genre: formData.genre,
-          date: new Date().toISOString()
-        });
-        localStorage.setItem(key, JSON.stringify(list));
-      } catch (err) {
-        console.warn(err);
+          if (error) {
+            console.warn("Artwork upload error:", error);
+            setSupabaseError(`Artwork upload failed: ${error.message}. Please check if is-releases storage bucket policies are set up correctly.`);
+            setIsSubmittingPayment(false);
+            return;
+          } else {
+            const { data: { publicUrl } } = supabase.storage
+              .from("single-releases")
+              .getPublicUrl(filePath);
+            artworkUrlValue = publicUrl;
+          }
+        } catch (err: any) {
+          console.warn("Artwork upload catch error:", err);
+          setSupabaseError(`Artwork upload failure: ${err?.message || err}`);
+          setIsSubmittingPayment(false);
+          return;
+        }
+
+        // Local fallback artwork preview (Base64)
+        if (!artworkUrlValue) {
+          try {
+            artworkUrlValue = await new Promise<string>((resolve) => {
+              const reader = new FileReader();
+              reader.onloadend = () => resolve(reader.result as string);
+              reader.readAsDataURL(artworkFile);
+            });
+          } catch (err) {
+            console.warn("Convert artwork to base64 failed:", err);
+          }
+        }
       }
-      
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    }, 1800);
+
+      // 2. Upload Master Audio WAV to Supabase Storage
+      if (audioFile) {
+        try {
+          const fileExt = audioFile.name.split('.').pop() || 'wav';
+          const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 11)}.${fileExt}`;
+          const filePath = `audio/${fileName}`;
+          const { data, error } = await supabase.storage
+            .from("single-releases")
+            .upload(filePath, audioFile, { cacheControl: '3600', upsert: true });
+
+          if (error) {
+            console.warn("Audio upload error:", error);
+            setSupabaseError(`Audio file upload failed: ${error.message}. Please check your single-releases storage bucket configuration.`);
+            setIsSubmittingPayment(false);
+            return;
+          } else {
+            const { data: { publicUrl } } = supabase.storage
+              .from("single-releases")
+              .getPublicUrl(filePath);
+            audioUrlValue = publicUrl;
+          }
+        } catch (err: any) {
+          console.warn("Audio upload catch error:", err);
+          setSupabaseError(`Audio upload failure: ${err?.message || err}`);
+          setIsSubmittingPayment(false);
+          return;
+        }
+
+        // Local level placeholder sound
+        if (!audioUrlValue) {
+          audioUrlValue = "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3";
+        }
+      }
+
+      const spotifyProfileVal = primaryArtists
+        .filter(a => a.name.trim() !== "")
+        .map(a => `${a.name}: ${a.spotifyProfile || 'Not Available'}`)
+        .concat(
+          featuredArtists
+            .filter(a => a.name.trim() !== "")
+            .map(a => `Featured: ${a.name}: ${a.spotifyProfile || 'Not Available'}`)
+        )
+        .join(" | ");
+
+      const appleProfileVal = primaryArtists
+        .filter(a => a.name.trim() !== "")
+        .map(a => `${a.name}: ${a.appleMusicProfile || 'Not Available'}`)
+        .concat(
+          featuredArtists
+            .filter(a => a.name.trim() !== "")
+            .map(a => `Featured: ${a.name}: ${a.appleMusicProfile || 'Not Available'}`)
+        )
+        .join(" | ");
+
+      const instagramProfileVal = primaryArtists
+        .filter(a => a.name.trim() !== "")
+        .map(a => `${a.name}: ${a.instagramId || 'Not Available'}`)
+        .concat(
+          featuredArtists
+            .filter(a => a.name.trim() !== "")
+            .map(a => `Featured: ${a.name}: ${a.instagramId || 'Not Available'}`)
+        )
+        .join(" | ");
+
+      const dbPayload = {
+        user_id: userIdValue,
+        title: formData.title,
+        artist: artistStr,
+        featured_artists: featuredStr || null,
+        genre: formData.subGenre ? `${formData.genre} - ${formData.subGenre}` : formData.genre,
+        license_type: formData.licenseType,
+        release_date: formData.releaseDate,
+        label_name: formData.labelName || null,
+        is_dolby_atmos: formData.isDolbyAtmos,
+        has_content_id: formData.hasContentId,
+        lyrics: formData.lyrics || null,
+        plan: planId,
+        price: currentPlan.price,
+        status: "Live & Transmitting",
+        audio_url: audioUrlValue,
+        artwork_url: artworkUrlValue,
+        email: formData.email,
+        contact_number: formData.contactNumber,
+        is_explicit: formData.isExplicit === "yes",
+        spotify_profile: spotifyProfileVal,
+        apple_music_profile: appleProfileVal,
+        instagram_profile: instagramProfileVal,
+        sub_genre: formData.subGenre
+      };
+
+      let insertedRow: any = null;
+
+      // Attempt direct save to Supabase
+      const { data, error: dbErr } = await supabase
+        .from("single_track_releases")
+        .insert([dbPayload])
+        .select();
+
+      if (dbErr) {
+        console.error("⛔ Supabase Single Insert Error details:", {
+          message: dbErr.message,
+          details: dbErr.details,
+          hint: dbErr.hint,
+          code: dbErr.code,
+        });
+        setSupabaseError(`Supabase DB Error: ${dbErr.message} (Code: ${dbErr.code}). ${dbErr.hint || "Please make sure your database single_track_releases table is created using our setup script and contains columns 'email' and 'contact_number'."}`);
+        setIsSubmittingPayment(false);
+        return;
+      } else if (data && data[0]) {
+        insertedRow = data[0];
+      }
+
+      setTimeout(() => {
+        setIsSubmittingPayment(false);
+        setCurrentStep("success");
+        
+        // Save campaign locally
+        try {
+          const key = "wavora_single_track_releases";
+          const saved = localStorage.getItem(key);
+          const list = saved ? JSON.parse(saved) : [];
+          list.unshift(insertedRow || {
+            id: `single-${Date.now()}`,
+            title: formData.title,
+            artist: artistStr,
+            featured_artists: featuredStr || null,
+            plan: planId,
+            price: currentPlan.price,
+            status: "Live & Transmitting",
+            genre: formData.subGenre ? `${formData.genre} - ${formData.subGenre}` : formData.genre,
+            license_type: formData.licenseType,
+            audio_url: audioUrlValue,
+            artwork_url: artworkUrlValue,
+            email: formData.email,
+            contact_number: formData.contactNumber,
+            is_explicit: formData.isExplicit === "yes",
+            spotify_profile: spotifyProfileVal,
+            apple_music_profile: appleProfileVal,
+            instagram_profile: instagramProfileVal,
+            sub_genre: formData.subGenre,
+            date: new Date().toISOString()
+          });
+          localStorage.setItem(key, JSON.stringify(list));
+          window.dispatchEvent(new Event("storage"));
+          // Dispatch custom sync event for instant Admin dashboard updates
+          window.dispatchEvent(new CustomEvent("wavora_single_track_releases_updated", { detail: list }));
+        } catch (err) {
+          console.warn(err);
+        }
+        
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }, 1800);
+
+    } catch (generalErr: any) {
+      console.error("General submission exception occurred:", generalErr);
+      setSupabaseError(`System Submission Error: ${generalErr?.message || "Unknown error."}`);
+      setIsSubmittingPayment(false);
+    }
   };
 
   const handleConfirmPaymentReceipt = (e: React.FormEvent) => {
@@ -323,7 +667,7 @@ export default function SingleTrackDistributor({ selectedPlanId, onBackToMain }:
             <div>
               <span className="text-[10px] font-black tracking-widest text-purple-400 uppercase font-mono block">Wavora Direct Engine</span>
               <h1 className="text-2xl sm:text-3xl font-extrabold uppercase font-mono tracking-tight text-white mt-0.5">
-                {currentStep === "dashboard" ? `Single-Track Distributor` : currentStep === "payment" ? `Secure Gateway Checkout` : `Release Scheduled`}
+                {currentStep === "contact" ? "Artist Contact Hub" : currentStep === "dashboard" ? `Single-Track Distributor` : currentStep === "payment" ? `Secure Gateway Checkout` : `Release Scheduled`}
               </h1>
             </div>
           </div>
@@ -380,6 +724,114 @@ export default function SingleTrackDistributor({ selectedPlanId, onBackToMain }:
         {/* STEP PANELS CONTAINER */}
         <AnimatePresence mode="wait">
           
+          {/* STEP 0: ARTIST CONTACT HUB FOR LIVE HUMAN VERIFICATION */}
+          {currentStep === "contact" && (
+            <motion.div
+              key="dist-contact"
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -15 }}
+              className="space-y-6 max-w-xl mx-auto"
+            >
+              <div className="bg-[#0c0c12] border border-white/10 rounded-2xl p-6 sm:p-8 space-y-6 shadow-2xl relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-purple-500/5 blur-3xl pointer-events-none rounded-full" />
+                
+                <div className="text-center space-y-2 border-b border-white/5 pb-5">
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-400 text-[10px] font-black uppercase tracking-wider font-mono">
+                    <Sparkles className="h-3 w-3 animate-spin" /> Live Sync Coordinator Assigned
+                  </div>
+                  <h2 className="text-lg sm:text-xl font-bold font-mono uppercase tracking-tight text-white mt-1">
+                    Release Verification setup
+                  </h2>
+                  <p className="text-xs text-gray-400 leading-relaxed max-w-md mx-auto">
+                    Before uploading tracks, link your high-priority coordinate channels. Wavora is an expert human-reviewed network — never a silent automated database.
+                  </p>
+                </div>
+
+                <div className="space-y-4">
+                  {/* High priority contact reassurance */}
+                  <div className="p-4 bg-purple-500/5 border border-purple-500/10 rounded-xl space-y-2.5">
+                    <div className="flex items-center gap-2 text-purple-400">
+                      <Phone className="h-4 w-4 shrink-0" />
+                      <span className="text-[10px] font-bold uppercase tracking-widest font-mono">
+                        Our Handshake Promise
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-gray-300 leading-relaxed">
+                      <strong>We ensure to talk to you directly:</strong> Every master application triggers a personal review by a Wavora sync manager. We will contact you directly via <strong>WhatsApp</strong> and <strong>Email</strong> to verify your layout, confirm copyright identifiers, coordinate Spotify/Apple profiles, and hand-guide your release live to the stores.
+                    </p>
+                  </div>
+
+                  {/* Email Field */}
+                  <div className="space-y-1.5">
+                    <label className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block font-mono">
+                      Coordinate Email <span className="text-red-400">*</span>
+                    </label>
+                    <div className="relative">
+                      <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-550" />
+                      <input
+                        type="email"
+                        value={formData.email}
+                        onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                        placeholder="artist@recordlabel.com"
+                        className="w-full bg-[#050507] border border-white/5 rounded-xl pl-11 pr-4 py-3 text-xs text-white focus:outline-none focus:ring-1 focus:ring-purple-500 transition-all font-medium placeholder-gray-600"
+                      />
+                    </div>
+                    {formErrors.email && (
+                      <p className="text-[9px] text-red-400 font-mono font-medium flex items-center gap-1 mt-1">
+                        <AlertCircle className="h-3 w-3" /> {formErrors.email}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Phone / WhatsApp Field */}
+                  <div className="space-y-1.5">
+                    <label className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block font-mono">
+                      WhatsApp / Contact Number <span className="text-red-400">*</span>
+                    </label>
+                    <div className="relative">
+                      <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-550" />
+                      <input
+                        type="tel"
+                        value={formData.contactNumber}
+                        onChange={(e) => setFormData(prev => ({ ...prev, contactNumber: e.target.value }))}
+                        placeholder="+91 XXXXX XXXXX (or complete international representation)"
+                        className="w-full bg-[#050507] border border-white/5 rounded-xl pl-11 pr-4 py-3 text-xs text-white focus:outline-none focus:ring-1 focus:ring-purple-500 transition-all font-medium placeholder-gray-600"
+                      />
+                    </div>
+                    {formErrors.contactNumber && (
+                      <p className="text-[9px] text-red-400 font-mono font-medium flex items-center gap-1 mt-1">
+                        <AlertCircle className="h-3 w-3" /> {formErrors.contactNumber}
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                <div className="pt-2 border-t border-white/5 flex gap-3">
+                  <button
+                    type="button"
+                    onClick={onBackToMain}
+                    className="flex-1 py-3 px-4 bg-white/5 hover:bg-white/10 text-gray-300 font-bold text-xs uppercase tracking-wider rounded-xl transition-all cursor-pointer text-center"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (validateContact()) {
+                        setFormErrors({});
+                        setCurrentStep("dashboard");
+                      }
+                    }}
+                    className="flex-1 py-3 px-4 bg-gradient-to-r from-purple-500 to-cyan-500 hover:opacity-90 text-white font-extrabold text-xs uppercase tracking-wider rounded-xl transition-all cursor-pointer flex items-center justify-center gap-2 shadow-[0_4px_20px_rgba(147,51,234,0.3)]"
+                  >
+                    Set Track Info <ArrowRight className="h-4 w-4" />
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          )}
+
           {/* STEP 1: TAILORED DISTRIBUTION PROFILE DASHBOARD */}
           {currentStep === "dashboard" && (
             <motion.div
@@ -423,59 +875,448 @@ export default function SingleTrackDistributor({ selectedPlanId, onBackToMain }:
                         </div>
 
                         <div className="space-y-1.5">
-                          <label className="text-[10px] font-bold text-gray-450 uppercase tracking-widest block font-mono">
-                            Primary Artist name <span className="text-red-400">*</span>
+                          <label className="text-[10px] font-bold text-gray-450 uppercase tracking-widest block font-mono flex items-center justify-between">
+                            <span>Primary Artist name <span className="text-red-400">*</span></span>
+                            <button 
+                              type="button" 
+                              onClick={() => setPrimaryArtists(p => [...p, { id: Date.now(), name: "", instagramId: "", hasSpotify: "no", hasApple: "no", spotifyProfile: "", appleMusicProfile: "" }])}
+                              className="text-purple-400 hover:text-purple-300 font-bold text-xs flex items-center"
+                            >
+                              + Add
+                            </button>
                           </label>
-                          <input
-                            type="text"
-                            placeholder="Band or Artist Handle"
-                            value={formData.artist}
-                            onChange={(e) => setFormData(prev => ({ ...prev, artist: e.target.value }))}
-                            className="w-full bg-[#050508] border border-white/10 rounded-xl px-3.5 py-3 text-xs text-white placeholder-gray-600 focus:outline-none focus:ring-1 focus:ring-purple-500 transition-all font-sans"
-                          />
+                          <div className="space-y-3">
+                            {primaryArtists.map((artist, idx) => (
+                              <div key={artist.id} className="space-y-3.5 p-3.5 bg-white/[0.02] border border-white/5 rounded-2xl relative">
+                                <div className="flex gap-2">
+                                  <input
+                                    type="text"
+                                    placeholder="Band or Artist Handle"
+                                    value={artist.name}
+                                    onChange={(e) => setPrimaryArtists(p => p.map(a => a.id === artist.id ? { ...a, name: e.target.value } : a))}
+                                    className="w-full bg-[#050508] border border-white/10 rounded-lg px-3 py-2.5 text-xs text-white placeholder-gray-600 focus:outline-none focus:ring-1 focus:ring-purple-500 transition-all font-sans"
+                                  />
+                                  {idx > 0 && (
+                                    <button
+                                      type="button"
+                                      onClick={() => setPrimaryArtists(p => p.filter(a => a.id !== artist.id))}
+                                      className="p-2.5 text-gray-500 hover:text-red-400 rounded-lg hover:bg-white/5 transition-colors"
+                                    >
+                                      <X className="h-4 w-4" />
+                                    </button>
+                                  )}
+                                </div>
+                                
+                                <div className="space-y-3">
+                                  <div className="space-y-1">
+                                    <label className="text-[9px] font-bold text-gray-450 uppercase tracking-wider block font-mono">Instagram ID</label>
+                                    <input
+                                      type="text"
+                                      placeholder="e.g. @artist_handle *"
+                                      value={artist.instagramId}
+                                      onChange={(e) => setPrimaryArtists(p => p.map(a => a.id === artist.id ? { ...a, instagramId: e.target.value } : a))}
+                                      className="w-full bg-[#050508] border border-white/10 rounded-lg px-3 py-2 text-xs text-white placeholder-gray-600 focus:outline-none focus:ring-1 focus:ring-purple-500 transition-all font-sans"
+                                    />
+                                    {formErrors[`primaryInsta_${idx}`] && <p className="text-[9px] text-red-400 font-mono flex items-center gap-1"><AlertCircle className="h-3 w-3" /> {formErrors[`primaryInsta_${idx}`]}</p>}
+                                  </div>
+
+                                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                                    {/* Spotify Box */}
+                                    <div className="bg-[#050509]/60 border border-white/5 p-3.5 rounded-xl space-y-2 flex flex-col justify-between">
+                                      <div className="space-y-1">
+                                        <span className="text-[10px] font-bold text-gray-300 uppercase tracking-wide font-mono block">
+                                          Spotify Profile?
+                                        </span>
+                                        <span className="text-[9px] text-gray-500 block leading-tight">
+                                          Does {artist.name || "this artist"} have a Spotify Artist page?
+                                        </span>
+                                      </div>
+                                      
+                                      <div className="flex gap-1.5 pt-1.5">
+                                        <button
+                                          type="button"
+                                          onClick={() => {
+                                            setPrimaryArtists(p => p.map(a => a.id === artist.id ? { ...a, hasSpotify: "no", spotifyProfile: "" } : a));
+                                          }}
+                                          className={`flex-1 py-1.5 rounded-lg text-[9px] uppercase font-bold font-mono transition-all border ${
+                                            artist.hasSpotify !== "yes"
+                                              ? "bg-purple-500/15 text-purple-400 border-purple-500/30 font-extrabold shadow-lg shadow-purple-500/5"
+                                              : "bg-[#050508] text-gray-450 border-white/5 hover:border-white/10"
+                                          }`}
+                                        >
+                                          No
+                                        </button>
+                                        <button
+                                          type="button"
+                                          onClick={() => {
+                                            setPrimaryArtists(p => p.map(a => a.id === artist.id ? { ...a, hasSpotify: "yes" } : a));
+                                          }}
+                                          className={`flex-1 py-1.5 rounded-lg text-[9px] uppercase font-bold font-mono transition-all border ${
+                                            artist.hasSpotify === "yes"
+                                              ? "bg-purple-500/15 text-purple-400 border-purple-500/30 font-extrabold shadow-lg shadow-purple-500/5"
+                                              : "bg-[#050508] text-gray-450 border-white/5 hover:border-white/10"
+                                          }`}
+                                        >
+                                          Yes
+                                        </button>
+                                      </div>
+
+                                      {artist.hasSpotify === "yes" && (
+                                        <div className="space-y-1 pt-2 border-t border-white/5 animate-fadeIn">
+                                          <label className="text-[9px] font-bold text-green-400 block font-mono uppercase tracking-wider">
+                                            Spotify URL/ID <span className="text-red-400 font-bold">*</span>
+                                          </label>
+                                          <input
+                                            type="text"
+                                            placeholder="Pasting is compulsory"
+                                            value={artist.spotifyProfile}
+                                            onChange={(e) => setPrimaryArtists(p => p.map(a => a.id === artist.id ? { ...a, spotifyProfile: e.target.value } : a))}
+                                            className="w-full bg-[#050508] border border-white/10 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:ring-1 focus:ring-green-400"
+                                          />
+                                          {formErrors[`primarySpotify_${idx}`] && (
+                                            <p className="text-[9px] text-red-400 font-mono flex items-center gap-1">
+                                              <AlertCircle className="h-3 w-3" /> {formErrors[`primarySpotify_${idx}`]}
+                                            </p>
+                                          )}
+                                        </div>
+                                      )}
+                                    </div>
+
+                                    {/* Apple Music Box */}
+                                    <div className="bg-[#050509]/60 border border-white/5 p-3.5 rounded-xl space-y-2 flex flex-col justify-between">
+                                      <div className="space-y-1">
+                                        <span className="text-[10px] font-bold text-gray-300 uppercase tracking-wide font-mono block">
+                                          Apple Music?
+                                        </span>
+                                        <span className="text-[9px] text-gray-500 block leading-tight">
+                                          Does {artist.name || "this artist"} have an Apple Music page?
+                                        </span>
+                                      </div>
+                                      
+                                      <div className="flex gap-1.5 pt-1.5">
+                                        <button
+                                          type="button"
+                                          onClick={() => {
+                                            setPrimaryArtists(p => p.map(a => a.id === artist.id ? { ...a, hasApple: "no", appleMusicProfile: "" } : a));
+                                          }}
+                                          className={`flex-1 py-1.5 rounded-lg text-[9px] uppercase font-bold font-mono transition-all border ${
+                                            artist.hasApple !== "yes"
+                                              ? "bg-purple-500/15 text-purple-400 border-purple-500/30 font-extrabold shadow-lg shadow-purple-500/5"
+                                              : "bg-[#050508] text-gray-450 border-white/5 hover:border-white/10"
+                                          }`}
+                                        >
+                                          No
+                                        </button>
+                                        <button
+                                          type="button"
+                                          onClick={() => {
+                                            setPrimaryArtists(p => p.map(a => a.id === artist.id ? { ...a, hasApple: "yes" } : a));
+                                          }}
+                                          className={`flex-1 py-1.5 rounded-lg text-[9px] uppercase font-bold font-mono transition-all border ${
+                                            artist.hasApple === "yes"
+                                              ? "bg-purple-500/15 text-purple-400 border-purple-500/30 font-extrabold shadow-lg shadow-purple-500/5"
+                                              : "bg-[#050508] text-gray-450 border-white/5 hover:border-white/10"
+                                          }`}
+                                        >
+                                          Yes
+                                        </button>
+                                      </div>
+
+                                      {artist.hasApple === "yes" && (
+                                        <div className="space-y-1 pt-2 border-t border-white/5 animate-fadeIn">
+                                          <label className="text-[9px] font-bold text-pink-400 block font-mono uppercase tracking-wider">
+                                            Apple Music URL/ID <span className="text-red-400 font-bold">*</span>
+                                          </label>
+                                          <input
+                                            type="text"
+                                            placeholder="Pasting is compulsory"
+                                            value={artist.appleMusicProfile}
+                                            onChange={(e) => setPrimaryArtists(p => p.map(a => a.id === artist.id ? { ...a, appleMusicProfile: e.target.value } : a))}
+                                            className="w-full bg-[#050508] border border-white/10 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:ring-1 focus:ring-pink-500"
+                                          />
+                                          {formErrors[`primaryApple_${idx}`] && (
+                                            <p className="text-[9px] text-red-400 font-mono flex items-center gap-1">
+                                              <AlertCircle className="h-3 w-3" /> {formErrors[`primaryApple_${idx}`]}
+                                            </p>
+                                          )}
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
                           {formErrors.artist && <p className="text-[10px] text-red-400 flex items-center gap-1 font-mono"><AlertCircle className="h-3 w-3" /> {formErrors.artist}</p>}
                         </div>
                       </div>
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="space-y-1.5">
-                          <label className="text-[10px] font-bold text-gray-450 uppercase tracking-widest block font-mono">Featured Artists / Band (Optional)</label>
-                          <input
-                            type="text"
-                            placeholder="e.g. Sitar Odyssey"
-                            value={formData.featuredArtists}
-                            onChange={(e) => setFormData(prev => ({ ...prev, featuredArtists: e.target.value }))}
-                            className="w-full bg-[#050508] border border-white/10 rounded-xl px-3.5 py-3 text-xs text-white placeholder-gray-600 focus:outline-none focus:ring-1 focus:ring-purple-500 transition-all font-sans"
-                          />
+                          <label className="text-[10px] font-bold text-gray-450 uppercase tracking-widest block font-mono flex items-center justify-between">
+                            <span>Featured Artists / Band (Optional)</span>
+                            <button 
+                              type="button" 
+                              onClick={() => setFeaturedArtists(p => [...p, { id: Date.now(), name: "", instagramId: "", hasSpotify: "no", hasApple: "no", spotifyProfile: "", appleMusicProfile: "" }])}
+                              className="text-purple-400 hover:text-purple-300 font-bold text-xs flex items-center"
+                            >
+                              + Add
+                            </button>
+                          </label>
+                          <div className="space-y-3">
+                            {featuredArtists.map((artist, idx) => (
+                              <div key={artist.id} className="space-y-3.5 p-3.5 bg-white/[0.02] border border-white/5 rounded-2xl relative">
+                                <div className="flex gap-2">
+                                  <input
+                                    type="text"
+                                    placeholder="e.g. Sitar Odyssey"
+                                    value={artist.name}
+                                    onChange={(e) => setFeaturedArtists(p => p.map(a => a.id === artist.id ? { ...a, name: e.target.value } : a))}
+                                    className="w-full bg-[#050508] border border-white/10 rounded-lg px-3 py-2.5 text-xs text-white placeholder-gray-650 focus:outline-none focus:ring-1 focus:ring-purple-500 transition-all font-sans"
+                                  />
+                                  {featuredArtists.length > 1 && (
+                                    <button
+                                      type="button"
+                                      onClick={() => setFeaturedArtists(p => p.filter(a => a.id !== artist.id))}
+                                      className="p-2.5 text-gray-500 hover:text-red-400 rounded-lg hover:bg-white/5 transition-colors"
+                                    >
+                                      <X className="h-4 w-4" />
+                                    </button>
+                                  )}
+                                </div>
+                                
+                                <div className="space-y-3">
+                                  <div className="space-y-1">
+                                    <label className="text-[9px] font-bold text-gray-450 uppercase tracking-wider block font-mono">Instagram ID</label>
+                                    <input
+                                      type="text"
+                                      placeholder="e.g. @artist_handle *"
+                                      value={artist.instagramId}
+                                      onChange={(e) => setFeaturedArtists(p => p.map(a => a.id === artist.id ? { ...a, instagramId: e.target.value } : a))}
+                                      className="w-full bg-[#050508] border border-white/10 rounded-lg px-3 py-2 text-xs text-white placeholder-gray-650 focus:outline-none focus:ring-1 focus:ring-purple-500 transition-all font-sans"
+                                    />
+                                    {formErrors[`featuredInsta_${idx}`] && <p className="text-[9px] text-red-400 font-mono flex items-center gap-1"><AlertCircle className="h-3 w-3" /> {formErrors[`featuredInsta_${idx}`]}</p>}
+                                  </div>
+
+                                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                                    {/* Spotify Box */}
+                                    <div className="bg-[#050509]/60 border border-white/5 p-3.5 rounded-xl space-y-2 flex flex-col justify-between">
+                                      <div className="space-y-1">
+                                        <span className="text-[10px] font-bold text-gray-300 uppercase tracking-wide font-mono block">
+                                          Spotify Profile?
+                                        </span>
+                                        <span className="text-[9px] text-gray-500 block leading-tight">
+                                          Does {artist.name || "this artist"} have a Spotify Artist page?
+                                        </span>
+                                      </div>
+                                      
+                                      <div className="flex gap-1.5 pt-1.5">
+                                        <button
+                                          type="button"
+                                          onClick={() => {
+                                            setFeaturedArtists(p => p.map(a => a.id === artist.id ? { ...a, hasSpotify: "no", spotifyProfile: "" } : a));
+                                          }}
+                                          className={`flex-1 py-1.5 rounded-lg text-[9px] uppercase font-bold font-mono transition-all border ${
+                                            artist.hasSpotify !== "yes"
+                                              ? "bg-purple-500/15 text-purple-400 border-purple-500/30 font-extrabold shadow-lg shadow-purple-500/5"
+                                              : "bg-[#050508] text-gray-455 border-white/5 hover:border-white/10"
+                                          }`}
+                                        >
+                                          No
+                                        </button>
+                                        <button
+                                          type="button"
+                                          onClick={() => {
+                                            setFeaturedArtists(p => p.map(a => a.id === artist.id ? { ...a, hasSpotify: "yes" } : a));
+                                          }}
+                                          className={`flex-1 py-1.5 rounded-lg text-[9px] uppercase font-bold font-mono transition-all border ${
+                                            artist.hasSpotify === "yes"
+                                              ? "bg-purple-500/15 text-purple-400 border-purple-500/30 font-extrabold shadow-lg shadow-purple-500/5"
+                                              : "bg-[#050508] text-gray-455 border-white/5 hover:border-white/10"
+                                          }`}
+                                        >
+                                          Yes
+                                        </button>
+                                      </div>
+
+                                      {artist.hasSpotify === "yes" && (
+                                        <div className="space-y-1 pt-2 border-t border-white/5 animate-fadeIn">
+                                          <label className="text-[9px] font-bold text-green-400 block font-mono uppercase tracking-wider">
+                                            Spotify URL/ID <span className="text-red-400 font-bold">*</span>
+                                          </label>
+                                          <input
+                                            type="text"
+                                            placeholder="Pasting is compulsory"
+                                            value={artist.spotifyProfile}
+                                            onChange={(e) => setFeaturedArtists(p => p.map(a => a.id === artist.id ? { ...a, spotifyProfile: e.target.value } : a))}
+                                            className="w-full bg-[#050508] border border-white/10 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:ring-1 focus:ring-green-400"
+                                          />
+                                          {formErrors[`featuredSpotify_${idx}`] && (
+                                            <p className="text-[9px] text-red-400 font-mono flex items-center gap-1">
+                                              <AlertCircle className="h-3 w-3" /> {formErrors[`featuredSpotify_${idx}`]}
+                                            </p>
+                                          )}
+                                        </div>
+                                      )}
+                                    </div>
+
+                                    {/* Apple Music Box */}
+                                    <div className="bg-[#050509]/60 border border-white/5 p-3.5 rounded-xl space-y-2 flex flex-col justify-between">
+                                      <div className="space-y-1">
+                                        <span className="text-[10px] font-bold text-gray-300 uppercase tracking-wide font-mono block">
+                                          Apple Music?
+                                        </span>
+                                        <span className="text-[9px] text-gray-500 block leading-tight">
+                                          Does {artist.name || "this artist"} have an Apple Music page?
+                                        </span>
+                                      </div>
+                                      
+                                      <div className="flex gap-1.5 pt-1.5">
+                                        <button
+                                          type="button"
+                                          onClick={() => {
+                                            setFeaturedArtists(p => p.map(a => a.id === artist.id ? { ...a, hasApple: "no", appleMusicProfile: "" } : a));
+                                          }}
+                                          className={`flex-1 py-1.5 rounded-lg text-[9px] uppercase font-bold font-mono transition-all border ${
+                                            artist.hasApple !== "yes"
+                                              ? "bg-purple-500/15 text-purple-400 border-purple-500/30 font-extrabold shadow-lg shadow-purple-500/5"
+                                              : "bg-[#050508] text-gray-455 border-white/5 hover:border-white/10"
+                                          }`}
+                                        >
+                                          No
+                                        </button>
+                                        <button
+                                          type="button"
+                                          onClick={() => {
+                                            setFeaturedArtists(p => p.map(a => a.id === artist.id ? { ...a, hasApple: "yes" } : a));
+                                          }}
+                                          className={`flex-1 py-1.5 rounded-lg text-[9px] uppercase font-bold font-mono transition-all border ${
+                                            artist.hasApple === "yes"
+                                              ? "bg-purple-500/15 text-purple-400 border-purple-500/30 font-extrabold shadow-lg shadow-purple-500/5"
+                                              : "bg-[#050508] text-gray-455 border-white/5 hover:border-white/10"
+                                          }`}
+                                        >
+                                          Yes
+                                        </button>
+                                      </div>
+
+                                      {artist.hasApple === "yes" && (
+                                        <div className="space-y-1 pt-2 border-t border-white/5 animate-fadeIn">
+                                          <label className="text-[9px] font-bold text-pink-400 block font-mono uppercase tracking-wider">
+                                            Apple Music URL/ID <span className="text-red-400 font-bold">*</span>
+                                          </label>
+                                          <input
+                                            type="text"
+                                            placeholder="Pasting is compulsory"
+                                            value={artist.appleMusicProfile}
+                                            onChange={(e) => setFeaturedArtists(p => p.map(a => a.id === artist.id ? { ...a, appleMusicProfile: e.target.value } : a))}
+                                            className="w-full bg-[#050508] border border-white/10 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:ring-1 focus:ring-pink-500"
+                                          />
+                                          {formErrors[`featuredApple_${idx}`] && (
+                                            <p className="text-[9px] text-red-400 font-mono flex items-center gap-1">
+                                              <AlertCircle className="h-3 w-3" /> {formErrors[`featuredApple_${idx}`]}
+                                            </p>
+                                          )}
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
                         </div>
 
-                        <div className="space-y-1.5">
-                          <label className="text-[10px] font-bold text-gray-450 uppercase tracking-widest block font-mono">Primary Musical Genre</label>
-                          <select
-                            value={formData.genre}
-                            onChange={(e) => setFormData(prev => ({ ...prev, genre: e.target.value }))}
-                            className="w-full bg-[#050508] border border-white/10 rounded-xl px-3.5 py-3 text-xs text-white focus:outline-none focus:ring-1 focus:ring-purple-500 transition-all font-sans"
-                          >
-                            <option value="Electronic">Electronic / Synthwave</option>
-                            <option value="Classical">Indian Classical / Hindustani</option>
-                            <option value="Lo-Fi">Chillout / Lofi Beats</option>
-                            <option value="Bollywood">Bollywood Popular</option>
-                            <option value="Rock">Alternative Rock</option>
-                            <option value="Pop">Contemporary Pop</option>
-                          </select>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          <div className="space-y-1.5">
+                            <label className="text-[10px] font-bold text-gray-450 uppercase tracking-widest block font-mono">Primary Musical Genre</label>
+                            <select
+                              value={formData.genre}
+                              onChange={(e) => setFormData(prev => ({ ...prev, genre: e.target.value, subGenre: "" }))}
+                              className="w-full bg-[#050508] border border-white/10 rounded-xl px-3.5 py-3 text-xs text-white focus:outline-none focus:ring-1 focus:ring-purple-500 transition-all font-sans"
+                            >
+                              <option value="Alternative">Alternative</option>
+                              <option value="Anime">Anime</option>
+                              <option value="Blues">Blues</option>
+                              <option value="Brazilian">Brazilian</option>
+                              <option value="Children's Music">Children's Music</option>
+                              <option value="Christian & Gospel">Christian & Gospel</option>
+                              <option value="Classical">Classical</option>
+                              <option value="Comedy">Comedy</option>
+                              <option value="Country">Country</option>
+                              <option value="Dance">Dance</option>
+                              <option value="Electronic">Electronic</option>
+                              <option value="Folk">Folk</option>
+                              <option value="Hip-Hop / Rap">Hip-Hop / Rap</option>
+                              <option value="Holiday">Holiday</option>
+                              <option value="Indian">Indian</option>
+                              <option value="Instrumental">Instrumental</option>
+                              <option value="Jazz">Jazz</option>
+                              <option value="Latin">Latin</option>
+                              <option value="Metal">Metal</option>
+                              <option value="New Age">New Age</option>
+                              <option value="Pop">Pop</option>
+                              <option value="Punk">Punk</option>
+                              <option value="R&B / Soul">R&B / Soul</option>
+                              <option value="Reggae">Reggae</option>
+                              <option value="Rock">Rock</option>
+                              <option value="Singer/Songwriter">Singer/Songwriter</option>
+                              <option value="Soundtrack">Soundtrack</option>
+                              <option value="Spoken Word">Spoken Word</option>
+                              <option value="World">World</option>
+                            </select>
+                          </div>
+                          
+                          <div className="space-y-1.5">
+                            <label className="text-[10px] font-bold text-gray-450 uppercase tracking-widest block font-mono">
+                              Sub Genre <span className="text-red-400 font-bold">* Compulsory</span>
+                            </label>
+                            <select
+                              value={formData.subGenre}
+                              onChange={(e) => setFormData(prev => ({ ...prev, subGenre: e.target.value }))}
+                              className={`w-full bg-[#050508] border rounded-xl px-3.5 py-3 text-xs text-white focus:outline-none focus:ring-1 focus:ring-purple-500 transition-all font-sans disabled:opacity-50 ${
+                                formErrors.subGenre ? "border-red-500/50 focus:ring-red-500" : "border-white/10"
+                              }`}
+                              disabled={!genreMap[formData.genre]?.length}
+                            >
+                              <option value="">Select a sub-genre...</option>
+                              {genreMap[formData.genre]?.map(sg => (
+                                <option key={sg} value={sg}>{sg}</option>
+                              ))}
+                            </select>
+                            {formErrors.subGenre && (
+                              <p className="text-[10px] text-red-400 flex items-center gap-1 font-mono">
+                                <AlertCircle className="h-3 w-3" /> {formErrors.subGenre}
+                              </p>
+                            )}
+                          </div>
                         </div>
                       </div>
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="space-y-1.5">
+                          <label className="text-[10px] font-bold text-gray-450 uppercase tracking-widest block font-mono">License Type</label>
+                          <select
+                            value={formData.licenseType}
+                            onChange={(e) => setFormData(prev => ({ ...prev, licenseType: e.target.value }))}
+                            className="w-full bg-[#050508] border border-white/10 rounded-xl px-3.5 py-3 text-xs text-white focus:outline-none focus:ring-1 focus:ring-purple-500 transition-all font-sans"
+                          >
+                            <option value="Original">Original</option>
+                            <option value="Non Exclusive">Non Exclusive</option>
+                            <option value="Cover">Cover</option>
+                          </select>
+                        </div>
+
+                        <div className="space-y-1.5">
                           <label className="text-[10px] font-bold text-gray-450 uppercase tracking-widest block font-mono">Target stream release date</label>
                           <input
                             type="date"
+                            min={getMinReleaseDate()}
                             value={formData.releaseDate}
                             onChange={(e) => setFormData(prev => ({ ...prev, releaseDate: e.target.value }))}
                             className="w-full bg-[#050508] border border-white/10 rounded-xl px-3.5 py-3 text-xs text-white focus:outline-none focus:ring-1 focus:ring-purple-500 transition-all font-sans"
                           />
-                          <p className="text-[9px] text-gray-550">Recommended buffer period: 5-8 days minimum.</p>
+                          <p className="text-[9px] text-gray-550">Recommended buffer period: {planId === 'elite' ? '2-3' : planId === 'pro' ? '3-5' : '7'} days minimum.</p>
                         </div>
 
                         <div className="space-y-1.5">
@@ -486,6 +1327,76 @@ export default function SingleTrackDistributor({ selectedPlanId, onBackToMain }:
                             value={formData.publisher}
                             className="w-full bg-white/[0.02] border border-white/5 opacity-55 cursor-not-allowed rounded-xl px-3.5 py-3 text-xs text-gray-400 font-mono"
                           />
+                        </div>
+                      </div>
+
+                      {/* Explicit Content & Content ID Classification */}
+                      <div className="bg-[#0e0e16]/60 border border-white/5 rounded-2xl p-5 space-y-4">
+                        <h3 className="text-xs font-bold uppercase tracking-widest text-purple-400 font-mono flex items-center gap-1.5 border-b border-white/5 pb-2">
+                          <AlertTriangle className="h-4 w-4" /> Content Classification &amp; Security Rights
+                        </h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div className="space-y-2 p-3 bg-white/[0.01] border border-white/5 rounded-xl">
+                            <div>
+                              <span className="text-[10px] font-bold text-gray-300 uppercase tracking-wider font-mono block">Explicit Content Warning</span>
+                              <span className="text-[9px] text-gray-500 block leading-tight pt-0.5">Does this track contain explicit lyrics, language, or themes?</span>
+                            </div>
+                            <div className="flex gap-2 pt-2">
+                              <button
+                                type="button"
+                                onClick={() => setFormData(prev => ({ ...prev, isExplicit: "no" }))}
+                                className={`flex-1 py-2 rounded-lg text-xs font-bold font-mono uppercase tracking-wider border transition-all ${
+                                  formData.isExplicit === "no"
+                                    ? "bg-purple-500/10 text-purple-400 border-purple-500/30 shadow-lg shadow-purple-500/5"
+                                    : "bg-[#050508] text-gray-450 border-white/5 hover:border-white/10"
+                                }`}
+                              >
+                                No
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setFormData(prev => ({ ...prev, isExplicit: "yes" }))}
+                                className={`flex-1 py-2 rounded-lg text-xs font-bold font-mono uppercase tracking-wider border transition-all ${
+                                  formData.isExplicit === "yes"
+                                    ? "bg-red-500/10 text-red-400 border-red-500/30 shadow-lg shadow-red-500/5"
+                                    : "bg-[#050508] text-gray-450 border-white/5 hover:border-white/10"
+                                }`}
+                              >
+                                Yes
+                              </button>
+                            </div>
+                          </div>
+
+                          <div className="space-y-2 p-3 bg-white/[0.01] border border-white/5 rounded-xl">
+                            <div>
+                              <span className="text-[10px] font-bold text-gray-300 uppercase tracking-wider font-mono block">YouTube Content ID Protection</span>
+                              <span className="text-[9px] text-gray-500 block leading-tight pt-0.5">Secure automated revenue of copyright matching on YouTube.</span>
+                            </div>
+                            <div className="flex gap-2 pt-2">
+                              <button
+                                type="button"
+                                onClick={() => setFormData(prev => ({ ...prev, hasContentId: false }))}
+                                className={`flex-1 py-2 rounded-lg text-xs font-bold font-mono uppercase tracking-wider border transition-all ${
+                                  !formData.hasContentId
+                                    ? "bg-purple-500/10 text-purple-400 border-purple-500/30 shadow-lg shadow-purple-500/5"
+                                    : "bg-[#050508] text-gray-450 border-white/5 hover:border-white/10"
+                                }`}
+                              >
+                                No
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setFormData(prev => ({ ...prev, hasContentId: true }))}
+                                className={`flex-1 py-2 rounded-lg text-xs font-bold font-mono uppercase tracking-wider border transition-all ${
+                                  formData.hasContentId
+                                    ? "bg-purple-500/10 text-purple-400 border-purple-500/30 shadow-lg shadow-purple-500/5"
+                                    : "bg-[#050509] text-gray-450 border-white/5 hover:border-white/10"
+                                }`}
+                              >
+                                Yes
+                              </button>
+                            </div>
+                          </div>
                         </div>
                       </div>
 
@@ -572,10 +1483,93 @@ export default function SingleTrackDistributor({ selectedPlanId, onBackToMain }:
 
                     </div>
 
+                    {/* DRAG AND DROP ARTWORK ATTACHMENT */}
+                    <div className="space-y-2.5">
+                      <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block font-mono">
+                        Release Artwork Cover <span className="text-red-400">*</span>
+                      </label>
+
+                      <div
+                        onDragEnter={handleArtworkDrag}
+                        onDragOver={handleArtworkDrag}
+                        onDragLeave={handleArtworkDrag}
+                        onDrop={handleArtworkDrop}
+                        onClick={() => artworkInputRef.current?.click()}
+                        className={`border-2 border-dashed rounded-xl p-6 flex flex-col items-center justify-center text-center cursor-pointer select-none transition-all duration-300 relative overflow-hidden ${
+                          artworkDragActive
+                            ? "border-purple-500 bg-purple-500/10 scale-[0.99]"
+                            : "border-white/10 bg-[#050508] hover:border-white/20 hover:bg-black/35"
+                        }`}
+                      >
+                        <input
+                          ref={artworkInputRef}
+                          type="file"
+                          accept="image/jpeg"
+                          onChange={handleArtworkSelect}
+                          className="hidden"
+                        />
+
+                        {!artworkFile ? (
+                          <div className="space-y-3 pointer-events-none">
+                            <div className="mx-auto w-10 h-10 rounded-full bg-purple-500/10 flex items-center justify-center">
+                              <Upload className="h-5 w-5 text-purple-400" />
+                            </div>
+                            <div>
+                              <p className="text-xs font-semibold text-white">Click or drag artwork here</p>
+                              <p className="text-[10px] text-gray-500 font-mono mt-1">ONLY 3000x3000px JPG accepted</p>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-4 z-10 w-full text-left">
+                            <div className="h-10 w-10 bg-purple-500/10 rounded border border-purple-500/20 flex items-center justify-center shrink-0">
+                              <Globe className="h-4 w-4 text-purple-400" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-xs font-bold text-white truncate flex items-center gap-2">
+                                {artworkFile.name}
+                                <CheckCircle2 className="h-3.5 w-3.5 text-green-400" />
+                              </p>
+                              <p className="text-[10px] text-gray-400 font-mono">{(artworkFile.size / 1024 / 1024).toFixed(2)} MB • 3000x3000px</p>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={(e) => { e.stopPropagation(); setArtworkFile(null); }}
+                              className="p-2 text-gray-400 hover:text-red-400 rounded-lg hover:bg-red-500/10 transition-colors shrink-0"
+                            >
+                              <X className="h-4 w-4" />
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                      
+                      <AnimatePresence>
+                        {artworkError && (
+                          <motion.p
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: "auto" }}
+                            exit={{ opacity: 0, height: 0 }}
+                            className="text-[10px] text-red-400 flex items-center gap-1 font-mono pl-1 pt-1"
+                          >
+                            <AlertCircle className="h-3 w-3" /> {artworkError}
+                          </motion.p>
+                        )}
+                        {formErrors.artwork && (
+                          <motion.p
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: "auto" }}
+                            exit={{ opacity: 0, height: 0 }}
+                            className="text-[10px] text-red-400 flex items-center gap-1 font-mono pl-1 pt-1"
+                          >
+                            <AlertCircle className="h-3 w-3" /> {formErrors.artwork}
+                          </motion.p>
+                        )}
+                      </AnimatePresence>
+                    </div>
+
                     {/* DRAG AND DROP HIGH-FIDELITY AUDIO ATTACHMENT */}
                     <div className="space-y-2.5">
                       <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block font-mono">
-                        Primary Audio Master WAV/MP3 <span className="text-red-400">*</span>
+                        Primary Audio Master WAV <span className="text-red-400">*</span>
                       </label>
 
                       <div
@@ -659,10 +1653,10 @@ export default function SingleTrackDistributor({ selectedPlanId, onBackToMain }:
                         // Dynamically assess toggle permissions depending on current single plan
                         let hasPrem = true;
                         if (planId === "basic") {
-                          // Basic only gets Spotify, YouTube, Amazon and Deezer, rest are disabled/greyed
-                          hasPrem = ["Spotify", "YouTube Music / Shorts", "Amazon Music", "Deezer Global"].includes(store);
+                          // Basic supports 150+ stores
+                          hasPrem = !["Wynk Music"].includes(store);
                         } else if (planId === "pro") {
-                          // Pro gets Spotify, Apple, JioSaavn, IG, YT, TikTok, Amazon, Deezer, Tidal, except Wynk
+                          // Pro gets everything except Wynk
                           hasPrem = !["Wynk Music"].includes(store);
                         }
                         
@@ -877,6 +1871,63 @@ export default function SingleTrackDistributor({ selectedPlanId, onBackToMain }:
                       )}
                     </div>
                     {formErrors.receipt && <p className="text-[10px] text-red-400 font-mono block"><AlertCircle className="h-3.5 w-3.5 inline mr-1" />{formErrors.receipt}</p>}
+                    
+                    {supabaseError && (
+                      <div className="p-4 bg-red-950/20 border border-red-500/30 rounded-xl space-y-3 text-left">
+                        <div className="flex items-center gap-2 text-red-400">
+                          <AlertCircle className="h-4.5 w-4.5 shrink-0" />
+                          <span className="text-[10px] font-bold uppercase tracking-widest font-mono">
+                            Database Schema Out of Sync
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-gray-200 leading-relaxed font-mono bg-black/40 p-2.5 rounded border border-white/5">
+                          {supabaseError}
+                        </p>
+                        
+                        <div className="pt-2 border-t border-red-500/10 space-y-2.5">
+                          <p className="text-[10px] uppercase font-bold text-purple-400 tracking-wider font-mono">
+                            ⚡ Fast Fix: Add Missing Columns & Refresh Cache
+                          </p>
+                          <p className="text-[10px] text-gray-400 leading-normal">
+                            Supabase caches database headers. If you previously created your table, you need to add the new columns and reload the schema. Paste this exact snippet in your <strong>Supabase SQL Editor</strong> and run it:
+                          </p>
+
+                          <div className="relative bg-black/80 rounded-lg p-3 border border-purple-500/20">
+                            <pre className="text-[9px] text-purple-300 font-mono overflow-x-auto whitespace-pre-wrap leading-relaxed select-all pr-16">
+{`ALTER TABLE public.single_track_releases ADD COLUMN IF NOT EXISTS is_explicit BOOLEAN DEFAULT false;
+ALTER TABLE public.single_track_releases ADD COLUMN IF NOT EXISTS spotify_profile TEXT;
+ALTER TABLE public.single_track_releases ADD COLUMN IF NOT EXISTS apple_music_profile TEXT;
+ALTER TABLE public.single_track_releases ADD COLUMN IF NOT EXISTS instagram_profile TEXT;
+ALTER TABLE public.single_track_releases ADD COLUMN IF NOT EXISTS sub_genre TEXT;
+
+-- Command below clears the Supabase PostgREST PGRST204 schema cache instantly:
+NOTIFY pgrst, 'reload schema';`}
+                            </pre>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const sql = `ALTER TABLE public.single_track_releases ADD COLUMN IF NOT EXISTS is_explicit BOOLEAN DEFAULT false;\nALTER TABLE public.single_track_releases ADD COLUMN IF NOT EXISTS spotify_profile TEXT;\nALTER TABLE public.single_track_releases ADD COLUMN IF NOT EXISTS apple_music_profile TEXT;\nALTER TABLE public.single_track_releases ADD COLUMN IF NOT EXISTS instagram_profile TEXT;\nALTER TABLE public.single_track_releases ADD COLUMN IF NOT EXISTS sub_genre TEXT;\nNOTIFY pgrst, 'reload schema';`;
+                                navigator.clipboard.writeText(sql);
+                                setCopiedMigrationSql(true);
+                                setTimeout(() => setCopiedMigrationSql(false), 2000);
+                              }}
+                              className={`absolute top-2 right-2 px-2.5 py-1 text-[9px] uppercase font-bold tracking-wider rounded-md border transition-all cursor-pointer flex items-center gap-1 ${
+                                copiedMigrationSql
+                                  ? "bg-emerald-500/20 border-emerald-500/40 text-emerald-400"
+                                  : "bg-purple-500/10 hover:bg-purple-500/25 border-purple-500/20 text-purple-400"
+                              }`}
+                            >
+                              {copiedMigrationSql ? <Check className="h-2.5 w-2.5" /> : <Copy className="h-2.5 w-2.5" />}
+                              {copiedMigrationSql ? "Copied!" : "Copy SQL"}
+                            </button>
+                          </div>
+
+                          <span className="text-[9px] text-gray-500 block">
+                            💡 After running the query, your release submit will pass perfectly!
+                          </span>
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   {/* Submission and return control buttons */}
