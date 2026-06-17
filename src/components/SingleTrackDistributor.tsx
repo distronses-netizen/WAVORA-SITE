@@ -1819,67 +1819,6 @@ export default function SingleTrackDistributor({ selectedPlanId, onBackToMain }:
                 {/* TAILORED WORKFLOW DIRECTORY (5 spans) */}
                 <div className="lg:col-span-4 space-y-6">
                   
-                  {/* Platforms checklist, customized dynamically by plan */}
-                  <div className="bg-[#0c0c12] border border-white/10 rounded-2xl p-5 shadow-xl space-y-5 relative">
-                    <h3 className="text-[11px] font-black uppercase text-white tracking-widest font-mono border-b border-white/5 pb-3 block">
-                      Platform Reach Checklist
-                    </h3>
-
-                    <div className="text-[10px] font-bold uppercase tracking-wide text-gray-500 flex items-center gap-1.5 font-mono mb-2">
-                      <Globe className="h-3.5 w-3.5 text-purple-400" />
-                      Authorized Distribution Streams: <strong className="text-white font-mono">{currentPlan.platformsCount} STORES</strong>
-                    </div>
-
-                    <div className="space-y-2.5">
-                      {["Spotify", "Apple Music", "JioSaavn", "Instagram / Facebook", "YouTube Music / Shorts", "TikTok / ByteDance", "Amazon Music", "Wynk Music", "Tidal HD", "Deezer Global"].map((store) => {
-                        // Dynamically assess toggle permissions depending on current single plan
-                        let hasPrem = true;
-                        if (planId === "basic") {
-                          // Basic supports 150+ stores
-                          hasPrem = !["Wynk Music"].includes(store);
-                        } else if (planId === "pro") {
-                          // Pro gets everything except Wynk
-                          hasPrem = !["Wynk Music"].includes(store);
-                        }
-                        
-                        return (
-                          <div 
-                            key={store} 
-                            className={`flex items-center justify-between p-2 rounded-lg border transition-all ${
-                              hasPrem 
-                                ? "bg-emerald-500/[0.01] border-emerald-500/10 text-gray-300" 
-                                : "bg-white/[0.01] border-white/5 text-gray-650 opacity-45 strike-through cursor-default"
-                            }`}
-                          >
-                            <span className="text-[10px] font-bold uppercase font-sans tracking-wide">
-                              {store}
-                            </span>
-                            {hasPrem ? (
-                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                            ) : (
-                              <span className="text-[8px] font-mono uppercase bg-red-400/5 border border-red-400/10 px-1 rounded-sm text-red-500/80 font-bold shrink-0">Locked</span>
-                            )}
-                          </div>
-                        );
-                      })}
-                    </div>
-
-                    {planId !== "elite" && (
-                      <div className="p-3.5 bg-purple-500/5 rounded-xl border border-purple-500/10 text-center">
-                        <p className="text-[10px] text-purple-300 leading-relaxed font-sans font-medium mb-2.5">
-                          Launch on Wynk Music, TikTok, Airplay radio slots, and lock in 100% royalties with Elite.
-                        </p>
-                        <button
-                          type="button"
-                          onClick={() => setPlanId("elite")}
-                          className="py-1 px-3.5 bg-gradient-purple-cyan text-black text-[9px] uppercase tracking-wider font-extrabold rounded cursor-pointer"
-                        >
-                          Upgrade to Elite
-                        </button>
-                      </div>
-                    )}
-                  </div>
-
                   {/* Pricing transparency card */}
                   <div className="bg-[#0c0c12] border border-white/10 rounded-2xl p-5 shadow-xl space-y-4">
                     <span className="text-[9px] font-black text-gray-500 uppercase tracking-widest font-mono block">Order Summary</span>
