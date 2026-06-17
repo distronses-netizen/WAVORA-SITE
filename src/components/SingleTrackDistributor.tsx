@@ -62,6 +62,8 @@ export default function SingleTrackDistributor({ selectedPlanId, onBackToMain }:
     composer: "",
     lyricist: "",
     producer: "",
+    language: "Hindi",
+    clipStartTime: "",
     licenseType: "Original",
     releaseDate: new Date(Date.now() + 7 * 24 * 3600 * 1000).toISOString().split("T")[0],
     labelName: "",
@@ -390,6 +392,14 @@ export default function SingleTrackDistributor({ selectedPlanId, onBackToMain }:
       errors.producer = "Producer name is compulsory.";
     }
 
+    if (!formData.language) {
+      errors.language = "Language selection is required.";
+    }
+
+    if (!formData.clipStartTime.trim()) {
+      errors.clipStartTime = "Clip start time is compulsory (e.g. 0:30).";
+    }
+
     primaryArtists.forEach((a, idx) => {
       if (a.name.trim() !== "") {
         if (!a.instagramId.trim()) {
@@ -596,7 +606,9 @@ export default function SingleTrackDistributor({ selectedPlanId, onBackToMain }:
         sub_genre: formData.subGenre,
         composer: formData.composer,
         lyricist: formData.lyricist,
-        producer: formData.producer
+        producer: formData.producer,
+        language: formData.language,
+        clip_start_time: formData.clipStartTime
       };
 
       let insertedRow: any = null;
@@ -652,6 +664,8 @@ export default function SingleTrackDistributor({ selectedPlanId, onBackToMain }:
             composer: formData.composer,
             lyricist: formData.lyricist,
             producer: formData.producer,
+            language: formData.language,
+            clip_start_time: formData.clipStartTime,
             date: new Date().toISOString()
           });
           localStorage.setItem(key, JSON.stringify(list));
@@ -1376,6 +1390,53 @@ export default function SingleTrackDistributor({ selectedPlanId, onBackToMain }:
                             {formErrors.producer && (
                               <p className="text-[10px] text-red-400 flex items-center gap-1 font-mono">
                                 <AlertCircle className="h-3 w-3" /> {formErrors.producer}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                          <div className="space-y-1.5">
+                            <label className="text-[10px] font-bold text-gray-450 uppercase tracking-widest block font-mono">
+                              Track Language <span className="text-red-400 font-bold">* Compulsory</span>
+                            </label>
+                            <select
+                              value={formData.language}
+                              onChange={(e) => setFormData(prev => ({ ...prev, language: e.target.value }))}
+                              className={`w-full bg-[#050508] border rounded-xl px-3.5 py-3 text-xs text-white focus:outline-none focus:ring-1 focus:ring-purple-500 transition-all appearance-none cursor-pointer ${
+                                formErrors.language ? "border-red-500/50 focus:ring-red-500" : "border-white/10"
+                              }`}
+                            >
+                              {["Hindi", "English", "Punjabi", "Haryanvi", "Bhojpuri", "Marathi", "Tamil", "Telugu", "Kannada", "Malayalam", "Gujarati", "Bengali", "Rajasthani", "Instrumental", "Other"].map(lang => (
+                                <option key={lang} value={lang} className="bg-[#0c0c12] text-white py-2">{lang}</option>
+                              ))}
+                            </select>
+                            {formErrors.language && (
+                              <p className="text-[10px] text-red-400 flex items-center gap-1 font-mono">
+                                <AlertCircle className="h-3 w-3" /> {formErrors.language}
+                              </p>
+                            )}
+                          </div>
+
+                          <div className="space-y-1.5">
+                            <label className="text-[10px] font-bold text-gray-450 uppercase tracking-widest block font-mono">
+                              Clip Start Time (HH:MM:SS) <span className="text-red-400 font-bold">* Compulsory</span>
+                            </label>
+                            <div className="relative">
+                              <Clock className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-550" />
+                              <input
+                                type="text"
+                                value={formData.clipStartTime}
+                                onChange={(e) => setFormData(prev => ({ ...prev, clipStartTime: e.target.value }))}
+                                placeholder="e.g. 0:00:30 (Instagram/TikTok start)"
+                                className={`w-full bg-[#050508] border rounded-xl pl-9 pr-3.5 py-3 text-xs text-white placeholder-white/20 focus:outline-none focus:ring-1 focus:ring-purple-500 transition-all font-sans ${
+                                  formErrors.clipStartTime ? "border-red-500/50 focus:ring-red-500" : "border-white/10"
+                                }`}
+                              />
+                            </div>
+                            {formErrors.clipStartTime && (
+                              <p className="text-[10px] text-red-400 flex items-center gap-1 font-mono">
+                                <AlertCircle className="h-3 w-3" /> {formErrors.clipStartTime}
                               </p>
                             )}
                           </div>

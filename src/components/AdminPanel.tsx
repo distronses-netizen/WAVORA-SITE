@@ -98,6 +98,8 @@ CREATE TABLE IF NOT EXISTS public.single_track_releases (
     artwork_url TEXT,
     email TEXT,
     contact_number TEXT,
+    language TEXT,
+    clip_start_time TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
@@ -127,6 +129,8 @@ ALTER TABLE public.single_track_releases ADD COLUMN IF NOT EXISTS audio_url TEXT
 ALTER TABLE public.single_track_releases ADD COLUMN IF NOT EXISTS artwork_url TEXT;
 ALTER TABLE public.single_track_releases ADD COLUMN IF NOT EXISTS email TEXT;
 ALTER TABLE public.single_track_releases ADD COLUMN IF NOT EXISTS contact_number TEXT;
+ALTER TABLE public.single_track_releases ADD COLUMN IF NOT EXISTS language TEXT;
+ALTER TABLE public.single_track_releases ADD COLUMN IF NOT EXISTS clip_start_time TEXT;
 
 ALTER TABLE public.applications ADD COLUMN IF NOT EXISTS user_id UUID;
 ALTER TABLE public.applications ADD COLUMN IF NOT EXISTS plan TEXT;
@@ -390,6 +394,8 @@ Primary Artist(s): ${single.artist}
 Featured Artist(s): ${single.featured_artists || 'None'}
 Primary Genre: ${primaryGenre}
 Sub Genre: ${subGenre}
+Track Language: ${single.language || 'Not specified'}
+Clip Start Time: ${single.clip_start_time || 'Not specified'}
 Composer: ${single.composer || 'N/A'}
 Lyricist: ${single.lyricist || 'N/A'}
 Producer: ${single.producer || 'N/A'}
@@ -2354,8 +2360,21 @@ ${single.lyrics || 'No associated lyrics provided.'}
                           <span className="text-xs font-semibold text-white block truncate">{selectedSingleRelease.lyricist || "N/A"}</span>
                         </div>
                         <div className="space-y-0.5">
-                          <span className="text-[8px] text-gray-500 uppercase tracking-widest block font-mono">Producer</span>
+                          <span className="text-[8px] text-gray-400 uppercase tracking-widest block font-mono">Producer</span>
                           <span className="text-xs font-semibold text-white block truncate">{selectedSingleRelease.producer || "N/A"}</span>
+                        </div>
+                      </div>
+
+                      <div className="h-[1px] w-full bg-white/5" />
+
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-0.5">
+                          <span className="text-[8px] text-cyan-400 uppercase tracking-widest block font-mono font-bold">Track Language</span>
+                          <span className="text-xs font-semibold text-white block truncate">{selectedSingleRelease.language || "Not specified"}</span>
+                        </div>
+                        <div className="space-y-0.5">
+                          <span className="text-[8px] text-orange-400 uppercase tracking-widest block font-mono font-bold">Clip Start Time</span>
+                          <span className="text-xs font-semibold text-white block truncate font-mono">{selectedSingleRelease.clip_start_time || "Not specified"}</span>
                         </div>
                       </div>
 
