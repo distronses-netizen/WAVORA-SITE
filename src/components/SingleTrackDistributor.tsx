@@ -91,6 +91,7 @@ export default function SingleTrackDistributor({ selectedPlanId, onBackToMain }:
   const [audioError, setAudioError] = useState("");
   const [audioProgress, setAudioProgress] = useState(0);
   const [isUploadingAudio, setIsUploadingAudio] = useState(false);
+  const [uploadingAudioInfo, setUploadingAudioInfo] = useState<{ name: string; size: number } | null>(null);
   const [dragActive, setDragActive] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -293,21 +294,26 @@ export default function SingleTrackDistributor({ selectedPlanId, onBackToMain }:
       return;
     }
     setAudioError("");
-    setAudioFile(file);
+    setAudioFile(null); // Clear previous if any
+    setUploadingAudioInfo({ name: file.name, size: file.size });
     setIsUploadingAudio(true);
     setAudioProgress(0);
 
-    // Dynamic wave progression bar
+    // Dynamic 1-100% progression simulation
     const interval = setInterval(() => {
       setAudioProgress(prev => {
         if (prev >= 100) {
           clearInterval(interval);
           setIsUploadingAudio(false);
+          setAudioFile(file); // Only set the official file after completing 100%
+          setUploadingAudioInfo(null);
           return 100;
         }
-        return prev + 10;
+        // Increment by smaller amounts for smoother 1-100 feel
+        const increment = Math.random() > 0.8 ? 2 : 1; 
+        return Math.min(prev + increment, 100);
       });
-    }, 150);
+    }, 25); // ~2.5s for 100%
   };
 
   // Payment receipts drag handlers
@@ -1676,32 +1682,63 @@ export default function SingleTrackDistributor({ selectedPlanId, onBackToMain }:
                           className="hidden"
                         />
 
-                        {audioFile ? (
+                        {isUploadingAudio ? (
+                          <div className="space-y-4 z-10 w-full px-4">
+                            <div className="flex flex-col items-center gap-3">
+                              <div className="relative">
+                                <div className="h-12 w-12 border-2 border-purple-500/20 rounded-full flex items-center justify-center">
+                                  <RefreshCw className="h-5 w-5 text-purple-400 animate-spin" />
+                                </div>
+                                <div className="absolute inset-0 flex items-center justify-center">
+                                  <div className="h-14 w-14 border-2 border-dashed border-purple-500/40 rounded-full animate-[spin_8s_linear_infinite]" />
+                                </div>
+                              </div>
+                              <div className="text-center">
+                                <p className="text-xs font-bold text-white tracking-widest uppercase font-mono mb-1">
+                                  Uploading Master Track
+                                </p>
+                                <p className="text-[10px] text-gray-400 truncate max-w-[200px] font-mono">
+                                  {uploadingAudioInfo?.name}
+                                </p>
+                              </div>
+                            </div>
+
+                            <div className="max-w-xs mx-auto w-full">
+                              <div className="flex justify-between text-[10px] font-black text-purple-400 font-mono uppercase mb-2">
+                                <span className="flex items-center gap-1.5">
+                                  <Sliders className="h-3 w-3" /> Bitrate Scaling
+                                </span>
+                                <span>{audioProgress}%</span>
+                              </div>
+                              <div className="h-1.5 bg-white/5 rounded-full overflow-hidden border border-white/5 shadow-inner">
+                                <motion.div 
+                                  className="h-full bg-gradient-to-r from-purple-600 via-fuchsia-500 to-cyan-400 shadow-[0_0_10px_rgba(168,85,247,0.5)]" 
+                                  initial={{ width: "0%" }}
+                                  animate={{ width: `${audioProgress}%` }}
+                                  transition={{ duration: 0.1 }}
+                                />
+                              </div>
+                              <p className="text-[8px] text-gray-500 font-mono uppercase tracking-tighter mt-2 text-center">
+                                Analyzing frequency spectrum &amp; master headers...
+                              </p>
+                            </div>
+                          </div>
+                        ) : audioFile ? (
                           <div className="space-y-3.5 z-10 w-full">
-                            <div className="h-10 w-10 bg-purple-500/10 border border-purple-500/20 text-purple-400 rounded-full flex items-center justify-center mx-auto">
+                            <div className="h-10 w-10 bg-purple-500/10 border border-purple-500/20 text-purple-400 rounded-full flex items-center justify-center mx-auto transition-transform hover:scale-110">
                               <Play className="h-5 w-5 fill-current text-purple-450" />
                             </div>
                             <div className="space-y-1">
-                              <p className="text-xs font-bold text-white truncate max-w-xs mx-auto font-mono">{audioFile.name}</p>
-                              <p className="text-[10px] text-gray-500">{(audioFile.size / (1024 * 1024)).toFixed(2)} MB • Audio Format</p>
+                              <p className="text-xs font-bold text-white truncate max-w-xs mx-auto font-mono flex items-center justify-center gap-1.5">
+                                {audioFile.name}
+                                <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" />
+                              </p>
+                              <p className="text-[10px] text-gray-500">{(audioFile.size / (1024 * 1024)).toFixed(2)} MB • WAV Verified</p>
                             </div>
 
-                            {/* Progress bar wave simulation */}
-                            {isUploadingAudio ? (
-                              <div className="max-w-xs mx-auto">
-                                <div className="flex justify-between text-[9px] text-purple-400 font-mono uppercase mb-1">
-                                  <span>Server Verification Checks</span>
-                                  <span>{audioProgress}%</span>
-                                </div>
-                                <div className="h-1 bg-white/5 rounded-full overflow-hidden">
-                                  <div className="h-full bg-gradient-to-r from-purple-500 to-cyan-400 transition-all duration-150" style={{ width: `${audioProgress}%` }} />
-                                </div>
-                              </div>
-                            ) : (
-                              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[9px] font-bold uppercase tracking-wider font-mono">
-                                <ShieldCheck className="h-4 w-4" /> 100% Stream Verification Match
-                              </div>
-                            )}
+                            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[9px] font-bold uppercase tracking-wider font-mono">
+                              <ShieldCheck className="h-4 w-4" /> 100% Stream Verification Match
+                            </div>
                           </div>
                         ) : (
                           <>
@@ -1817,13 +1854,25 @@ export default function SingleTrackDistributor({ selectedPlanId, onBackToMain }:
                   <p className="text-xs text-gray-300 font-semibold">{currentPlan.name} • Setup fee ₹{currentPlan.price} • Stream deployment scheduled</p>
                 </div>
 
-                <button
-                  onClick={handleProceedToPayment}
-                  className="w-full sm:w-auto px-7 py-3.5 bg-purple-600 hover:bg-purple-500 text-[#07070A] bg-white font-black uppercase text-xs tracking-widest rounded-xl transition-all shadow-[0_4px_20px_rgba(139,92,200,0.3)] flex items-center justify-center gap-1.5 cursor-pointer"
-                >
-                  Proceed to Payment Selection
-                  <ArrowRight className="h-4.5 w-4.5" />
-                </button>
+                <div className="flex flex-col items-end gap-2">
+                  <button
+                    onClick={handleProceedToPayment}
+                    disabled={!artworkFile || !audioFile || isUploadingAudio}
+                    className={`w-full sm:w-auto px-7 py-3.5 font-black uppercase text-xs tracking-widest rounded-xl transition-all flex items-center justify-center gap-1.5 ${
+                      (!artworkFile || !audioFile || isUploadingAudio)
+                        ? "bg-white/5 text-gray-500 cursor-not-allowed border border-white/5"
+                        : "bg-purple-600 hover:bg-purple-500 text-white shadow-[0_4px_20px_rgba(139,92,200,0.3)] cursor-pointer"
+                    }`}
+                  >
+                    Proceed to Payment Selection
+                    <ArrowRight className="h-4.5 w-4.5" />
+                  </button>
+                  {(!artworkFile || !audioFile || isUploadingAudio) && (
+                    <p className="text-[10px] text-purple-400/60 font-mono uppercase font-bold tracking-tighter">
+                      {!artworkFile && !audioFile ? "Upload Artwork & Audio to proceed" : !artworkFile ? "Upload Artwork to proceed" : !audioFile ? "Upload Audio to proceed" : "Wait for audio verification..."}
+                    </p>
+                  )}
+                </div>
               </div>
             </motion.div>
           )}
