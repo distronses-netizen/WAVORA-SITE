@@ -101,7 +101,29 @@ export default function Navbar() {
           </nav>
 
           {/* Desktop CTA */}
-          <div className="hidden lg:block shrink-0" id="desktop-cta-container">
+          <div className="hidden lg:flex shrink-0 items-center gap-3" id="desktop-cta-container">
+            <button
+              id="nav-single-track-btn"
+              onClick={(e) => {
+                e.preventDefault();
+                window.dispatchEvent(new CustomEvent("open-single-track-distribute"));
+              }}
+              className="px-5 py-2.5 rounded-full text-sm font-bold border border-cyan-500/50 text-cyan-300 hover:border-cyan-400 bg-cyan-500/10 hover:bg-cyan-500/20 transition-all duration-300 cursor-pointer flex items-center gap-1.5 shadow-[0_0_15px_rgba(6,182,212,0.15)]"
+            >
+              <Disc className="h-4 w-4" />
+              Single Track Release
+            </button>
+            <button
+              id="nav-free-distribution-btn"
+              onClick={(e) => {
+                e.preventDefault();
+                window.dispatchEvent(new CustomEvent("open-free-modal"));
+              }}
+              className="px-5 py-2.5 rounded-full text-sm font-bold border border-purple-500/50 text-purple-300 hover:border-purple-400 bg-purple-500/10 hover:bg-purple-500/20 transition-all duration-300 cursor-pointer flex items-center gap-1.5 shadow-[0_0_15px_rgba(168,85,247,0.15)]"
+            >
+              <Sparkles className="h-4 w-4" />
+              Free Distribution
+            </button>
             {/* LINK: Dashboard Link Placeholder --> */}
             <button
               id="nav-apply-btn"
@@ -179,7 +201,33 @@ export default function Navbar() {
                   {link.name}
                 </a>
               ))}
-              <div className="pt-4 px-4 border-t border-white/5">
+              <div className="pt-4 px-4 border-t border-white/5 space-y-3">
+                <button
+                  key="mobile-single-track-cta"
+                  onClick={() => {
+                    setIsOpen(false);
+                    setTimeout(() => {
+                      window.dispatchEvent(new CustomEvent("open-single-track-distribute"));
+                    }, 100);
+                  }}
+                  className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-full text-sm font-semibold border border-cyan-500/50 text-cyan-300 hover:border-cyan-400 bg-cyan-500/10 hover:bg-cyan-500/20 transition-all cursor-pointer shadow-[0_0_15px_rgba(6,182,212,0.15)]"
+                >
+                  <Disc className="h-4 w-4" />
+                  Single Track Release
+                </button>
+                <button
+                  key="mobile-free-cta"
+                  onClick={() => {
+                    setIsOpen(false);
+                    setTimeout(() => {
+                      window.dispatchEvent(new CustomEvent("open-free-modal"));
+                    }, 100);
+                  }}
+                  className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-full text-sm font-semibold border border-purple-500/50 text-purple-300 hover:border-purple-400 bg-purple-500/10 hover:bg-purple-500/20 transition-all cursor-pointer shadow-[0_0_15px_rgba(168,85,247,0.15)]"
+                >
+                  <Sparkles className="h-4 w-4" />
+                  Free Distribution
+                </button>
                 {/* LINK: Dashboard Link Placeholder --> */}
                 <button
                   key="mobile-cta"

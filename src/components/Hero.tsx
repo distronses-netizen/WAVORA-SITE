@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { Play, Sparkles, Star, Headset, ArrowRight } from "lucide-react";
+import { Play, Sparkles, Star, Headset, ArrowRight, Disc } from "lucide-react";
 import { motion } from "motion/react";
 
 export default function Hero() {
@@ -76,7 +76,7 @@ export default function Hero() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.3 }}
-              className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4"
+              className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 flex-wrap"
               id="hero-actions"
             >
               <a
@@ -98,6 +98,30 @@ export default function Hero() {
                 className="w-full sm:w-auto px-8 py-4 rounded-full text-center text-sm font-bold border border-white/10 text-white hover:border-white/20 bg-white/5 hover:bg-white/10 transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer font-sans"
               >
                 Join Wavora Live
+              </button>
+
+              <button
+                id="hero-free-distribution-cta"
+                onClick={(e) => {
+                  e.preventDefault();
+                  window.dispatchEvent(new CustomEvent("open-free-modal"));
+                }}
+                className="w-full sm:w-auto px-8 py-4 rounded-full text-center text-sm font-bold border border-purple-500/50 text-purple-300 hover:border-purple-400 bg-purple-500/10 hover:bg-purple-500/20 transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer font-sans shadow-[0_0_15px_rgba(168,85,247,0.15)] hover:shadow-[0_0_20px_rgba(168,85,247,0.3)]"
+              >
+                <Sparkles className="h-4 w-4" />
+                Free Distribution
+              </button>
+
+              <button
+                id="hero-single-track-cta"
+                onClick={(e) => {
+                  e.preventDefault();
+                  window.dispatchEvent(new CustomEvent("open-single-track-distribute"));
+                }}
+                className="w-full sm:w-auto px-8 py-4 rounded-full text-center text-sm font-bold border border-cyan-500/50 text-cyan-300 hover:border-cyan-400 bg-cyan-500/10 hover:bg-cyan-500/20 transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer font-sans shadow-[0_0_15px_rgba(6,182,212,0.15)] hover:shadow-[0_0_20px_rgba(6,182,212,0.3)]"
+              >
+                <Disc className="h-4 w-4" />
+                Single Track Release
               </button>
             </motion.div>
 
